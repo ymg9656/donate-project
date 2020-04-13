@@ -1,0 +1,38 @@
+.margin-bottom-10 {
+  margin-bottom: 10px !important;
+}
+.margin-bottom-20 {
+  margin-bottom: 20px !important;
+}
+.txt-overflow-3 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* 라인수 */
+  -webkit-box-orient: vertical;
+  word-wrap:break-word;
+}
+
+.custom-input-group-btn{
+  position: relative;
+  left: -49px;
+  top: 1px;
+  z-index: 99999;
+}
+
+.justify-content-center{
+  -webkit-box-pack: start !important;
+  -ms-flex-pack: start !important;
+  justify-content: left !important;
+}
+.pic{
+
+  display: block;
+  width: 150px;
+  height: 150px;
+  text-indent: -9999px;
+  border-radius: 75px;
+  overflow: hidden;
+  background-size: cover;
+  margin: 0 auto 15px auto;
+}
