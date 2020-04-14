@@ -4,8 +4,6 @@ pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts/ownership/Ownable.sol";
 import "./ProductContract.sol";
 import "./TargetContract.sol";
-import "./ProductContract.sol";
-
 
 contract CampaignContract is Ownable {
 
@@ -42,8 +40,11 @@ contract CampaignContract is Ownable {
     event DoDonate(bytes32 campaignId, address donor, uint256 amount);
     event Refund(bytes32 campaignId, address donor, uint256 amount);
     event CreateInvoice(bytes32 campaignId, bytes32 productId, uint8 step);
+    event Submit(bytes32 campaignId,bytes32 productId,uint8 step);
+    event DoWithdrawal(bytes32 campaignId,bytes32 productId,uint8 step);
 
-//    constructor(ProductContract _productContract, TargetContract _targetContract) public {
+
+    //    constructor(ProductContract _productContract, TargetContract _targetContract) public {
 //        productContract = _productContract;
 //        targetContract = _targetContract;
 //    }
@@ -112,7 +113,6 @@ contract CampaignContract is Ownable {
         Donate storage donate = donateList[donateList.length - 1];
         donate.addr = msg.sender;
         donate.amount = msg.value;
-
         campaign.donorAddressList.push(msg.sender);
         campaign.totalAmount += msg.value;
 
@@ -149,7 +149,14 @@ contract CampaignContract is Ownable {
 
         emit CreateInvoice(campaignId, productId, 1);
     }
+    function getInvoiceStepByCampaign(bytes32 campaignId, bytes32 productId) public view returns(uint8){
 
+
+        Invoice storage invoice = invoiceMap[campaignId][productId];
+
+        return invoice.step;
+
+    }
     function submitReceipt(
         bytes32 campaignId,
         bytes32 productId,
@@ -164,10 +171,24 @@ contract CampaignContract is Ownable {
         bytes32 message = keccak256(abi.encodePacked(campaignId, productId, msg.sender));
         bytes32 prefixedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n", "32", message));
         address signer = ecrecover(prefixedHash, _v, _r, _s);
+
         ProductContract.Product memory product = productContract.getProduct(productId);
         require(product.supplier == signer);
+        invoice.step=2;
+        emit Submit(campaignId,productId,2);
     }
 
+
+    function withdrawal(bytes32 campaignId,bytes32 productId) public {
+        Invoice storage invoice = invoiceMap[campaignId][productId];
+        bytes32 orgProductId=invoice.productId;
+        require(orgProductId != bytes32(0) && invoice.step==2);
+        ProductContract.Product memory product = productContract.getProduct(orgProductId);
+        require(product.supplier == msg.sender);
+        msg.sender.transfer(product.price);
+        invoice.step=3;
+        emit DoWithdrawal(campaignId, productId, 3);
+    }
     function uint2str(uint i) internal pure returns (string memory) {
         if (i == 0) return "0";
         uint j = i;
