@@ -54,7 +54,7 @@
                                     <div class="progress-label"><span>목표금액 : 50,000</span></div>
                                 </div>
                                 <div class="progress" style="height: 8px; margin: 1rem 0px 0px;">
-                                    <div role="progressbar" aria-valuenow="60" aria-valuemin="0"
+                                    <div role="progressbar" aria-valuemin="0"
                                          aria-valuemax="100" class="progress-bar bg-success"
                                          style="width: 60%;"></div>
                                 </div>

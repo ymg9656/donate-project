@@ -29,7 +29,7 @@
 
                     <div class="row row-grid">
 
-                        <div class="col-lg-4 margin-bottom-20" v-for="product in data.productList">
+                        <div class="col-lg-4 margin-bottom-20" v-bind:key="product" v-for="product in data.productList">
                             <div class="card border-0 card-lift--hover shadow"><!---->
                                 <div class="card-body py-5">
                                     <span class="pic" v-bind:style="{'background-image': 'url('+product.thumbnail+')'}" style="background-repeat: no-repeat; background-position: center top; background-size: 150px; ">{{product.name}}</span>
@@ -72,26 +72,26 @@
                     productList: [],
                     sampleDataList:[
                         {
-                            "supplier":"0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851",
+                            "supplier":"0x449962EceECE14cDa0EA7FaC770AAE5991a8048B",
                             "name":"다우니 섬유유연제 초고농축 퍼퓸 보타니스 엑스퍼트 1L 모음전",
                             "thumbnail":"https://shop-phinf.pstatic.net/20200405_219/1586094947506TLUzr_JPEG/23457280919448821_381174649.jpg?type=m510",
                             "price":10,
                             "contents":"http://localhost:8080/static/다우니.png"
                         },
-                        {
-                            "supplier":"0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851",
+                        /*{
+                            "supplier":"0x449962EceECE14cDa0EA7FaC770AAE5991a8048B",
                             "name":"멜트블로운 MB 부직포 마스크 3중필터 일회용마스크 50매 100매",
                             "thumbnail":"https://shop-phinf.pstatic.net/20200320_291/15847125987822TAJO_PNG/22074932336972960_1577279868.png?type=m510",
                             "price":10,
                             "contents":"http://localhost:8080/static/멜트블로운.png"
                         },
                         {
-                            "supplier":"0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851",
+                            "supplier":"0x449962EceECE14cDa0EA7FaC770AAE5991a8048B",
                             "name":"농심 백산수 2L 24병 생수",
                             "thumbnail":"https://shop-phinf.pstatic.net/20190924_72/1569303464086YQpP8_JPEG/6664202718233170_1659006007.jpg?type=m510",
                             "price":10,
                             "contents":"http://localhost:8080/static/생수.png"
-                        },
+                        },*/
                     ]
                 }
             };
@@ -102,7 +102,7 @@
                 initProductContract(new Web3(new Web3.providers.HttpProvider('http://localhost:7545')));
             }
             var list=this.data.productList;
-            productContract.methods.getProductList().call({from: '0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851'}, function(error, result){
+            productContract.methods.getProductList().call({from: '0x449962EceECE14cDa0EA7FaC770AAE5991a8048B'}, function(error, result){
 
                 window.console.log("getList "+ error);
                 window.console.log("getList "+ result);
@@ -142,7 +142,7 @@
                     var _thumbnail=list[i].thumbnail;
                     var _price=list[i].price;
                     var _contents=list[i].contents;
-                    productContract.methods.addProduct(_supplier,_name,_thumbnail,_price,_contents).send({from: '0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851'})
+                    productContract.methods.addProduct(_supplier,_name,_thumbnail,_price,_contents).send({from: '0x449962EceECE14cDa0EA7FaC770AAE5991a8048B'})
                         .on('transactionHash', function(hash){
                             window.console.log("hash: "+hash);
                         })

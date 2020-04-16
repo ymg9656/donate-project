@@ -38,7 +38,7 @@
                                 <div class="form-group">
                                     <div class="input-group input-group-alternative mb-3">
                                         <select class="form-control" name="target" ref="targetAddress">
-                                            <option v-for="target in data.targetList" v-bind:value="target.addr">{{target.name}}</option>
+                                            <option v-bind:key="target" v-for="target in data.targetList" v-bind:value="target.addr">{{target.name}}</option>
                                         </select>
                                     </div>
                                 </div>
@@ -46,7 +46,7 @@
                                     <div class="input-group input-group-alternative mb-3">
                                         <select class="form-control select2" name="product" id="product"
                                                 multiple="multiple" ref="productSeqList">
-                                            <option v-for="product in data.productList" v-bind:value="product.id">{{product.name}}</option>
+                                            <option v-bind:key="product" v-for="product in data.productList" v-bind:value="product.id">{{product.name}}</option>
                                         </select>
                                     </div>
                                 </div>
@@ -110,7 +110,7 @@
                 initProductContract(new Web3(new Web3.providers.HttpProvider('http://localhost:7545')));
             }
             var productList=this.data.productList;
-            productContract.methods.getProductList().call({from: '0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851'}, function(error, result){
+            productContract.methods.getProductList().call({from: '0x449962EceECE14cDa0EA7FaC770AAE5991a8048B'}, function(error, result){
                 for(var i =0; i<result.length;i++){
                     var target={
                         "id":result[i][0],
@@ -128,7 +128,7 @@
                 initTargetContract(new Web3(new Web3.providers.HttpProvider('http://localhost:7545')));
             }
             var targetList=this.data.targetList;
-            targetContract.methods.getTargetList().call({from: '0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851'}, function(error, result){
+            targetContract.methods.getTargetList().call({from: '0x449962EceECE14cDa0EA7FaC770AAE5991a8048B'}, function(error, result){
                 window.console.log("getList "+ error);
                 window.console.log("getList "+ result);
                 window.console.log("getList "+ JSON.stringify(result));
@@ -195,7 +195,7 @@
                 var _productSeqList=new Array();
                 _productSeqList.push(this.$refs.productSeqList.value);
 
-                campaignContract.methods.addCampaign(_targetAddress,_name,_thumbnail,_cap,_startTime,_endTime,_contents,_productSeqList).send({from: '0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851'})
+                campaignContract.methods.addCampaign(_targetAddress,_name,_thumbnail,_cap,_startTime,_endTime,_contents,_productSeqList).send({from: '0x449962EceECE14cDa0EA7FaC770AAE5991a8048B'})
                     .on('transactionHash', function(hash){
                         window.console.log("hash: "+hash);
                     })

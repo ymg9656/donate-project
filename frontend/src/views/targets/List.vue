@@ -29,7 +29,7 @@
 
 
                     <div class="row row-grid">
-                        <div class="col-lg-4 margin-bottom-20" v-for="target in data.targetList">
+                        <div class="col-lg-4 margin-bottom-20" v-bind:key="target" v-for="target in data.targetList">
                             <div class="card border-0 card-lift--hover shadow"><!---->
                                 <div class="card-body py-5">
                                     <span class="pic" v-bind:style="{'background-image': 'url('+target.thumbnail+')'}" style="background-repeat: no-repeat; background-position: center top; background-size: 150px; ">양육어린이사진</span>
@@ -78,7 +78,7 @@
                     targetList: [],
                     sampleDataList:[
                         {
-                            "addr":"0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851",
+                            "addr":"0x449962EceECE14cDa0EA7FaC770AAE5991a8048B",
                             "name":"왐부아",
                             "thumbnail":"https://media.ci.org/w_300/v1579351913/ChildPhotos/Published/06867133_083607.jpg",
                             "gender":"남",
@@ -86,7 +86,7 @@
                             "country":"케냐",
                             "contents":"http://localhost:8080/static/왐부아.png"
                         },
-                        {
+                        /*{
                             "addr":"0x5c2227605a689BfeEf2AD126cC53660F3d19e306",
                             "name":"조제프",
                             "thumbnail":"https://media.ci.org/w_300/v1554827321/ChildPhotos/Published/07848121_bcsakh.jpg",
@@ -121,7 +121,7 @@
                             "birthday":"2018.02.14",
                             "country":"탄자니아",
                             "contents":"http://localhost:8080/static/라시드.png"
-                        },
+                        },*/
                     ]
                 }
             };
@@ -132,7 +132,7 @@
                 initTargetContract(new Web3(new Web3.providers.HttpProvider('http://localhost:7545')));
             }
             var list=this.data.targetList;
-            targetContract.methods.getTargetList().call({from: '0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851'}, function(error, result){
+            targetContract.methods.getTargetList().call({from: '0x449962EceECE14cDa0EA7FaC770AAE5991a8048B'}, function(error, result){
                 window.console.log("getList "+ error);
                 window.console.log("getList "+ result);
                 window.console.log("getList "+ JSON.stringify(result));
@@ -176,7 +176,7 @@
                     var _country=list[i].country;
                     var _contents=list[i].contents;
 
-                    targetContract.methods.addTarget(_addr,_name,_thumbnail,_gender,_birthday,_country,_contents).send({from: '0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851'})
+                    targetContract.methods.addTarget(_addr,_name,_thumbnail,_gender,_birthday,_country,_contents).send({from: '0x449962EceECE14cDa0EA7FaC770AAE5991a8048B'})
                         .on('transactionHash', function(hash){
                             window.console.log("hash: "+hash);
                         })

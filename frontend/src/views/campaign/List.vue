@@ -25,7 +25,7 @@
                 <div class="col-lg-12">
                     <div class="row row-grid">
 
-                        <div class="col-lg-4 margin-bottom-20" v-for="campaign in data.campaignList">
+                        <div class="col-lg-4 margin-bottom-20" v-bind:key="campaign" v-for="campaign in data.campaignList">
                             <div class="card border-0 card-lift--hover shadow"><!---->
                                 <div class="card-body py-4">
                                     <span class="badge text-uppercase badge-warning margin-bottom-10">{{campaign.status}}</span>
@@ -38,7 +38,7 @@
                                             <div class="progress-label"><span>목표금액 : {{campaign.cap}}</span></div>
                                         </div>
                                         <div class="progress" style="height: 8px;margin: 1rem 0 0 0; ">
-                                            <div role="progressbar" aria-valuenow="60" aria-valuemin="0"
+                                            <div role="progressbar" aria-valuemin="0"
                                                  aria-valuemax="100" class="progress-bar bg-success"
                                                  v-bind:aria-valuenow="campaign.capPercent"  v-bind:style="{ width: campaign.capPercent+'%'}"></div>
                                         </div>
@@ -80,7 +80,7 @@
                 initCampaignContract(new Web3(new Web3.providers.HttpProvider('http://localhost:7545')));
             }
             var list=this.data.campaignList;
-            campaignContract.methods.getCampaignList().call({from: '0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851'}, function(error, result){
+            campaignContract.methods.getCampaignList().call({from: '0x449962EceECE14cDa0EA7FaC770AAE5991a8048B'}, function(error, result){
                 window.console.log("getList "+ error);
                 window.console.log("getList "+ result);
                 window.console.log("getList "+ JSON.stringify(result));
