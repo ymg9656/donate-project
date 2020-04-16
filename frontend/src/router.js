@@ -22,9 +22,9 @@ import CampaignDetail from "./views/campaign/Detail.vue";
 import CampaignRegister from "./views/campaign/Register.vue";
 
 
-import Target from "./views/target/List.vue";
-import TargetDetail from "./views/target/Detail.vue";
-import TargetRegister from "./views/target/Register.vue";
+import Target from "./views/targets/List.vue";
+import TargetDetail from "./views/targets/Detail.vue";
+import TargetRegister from "./views/targets/Register.vue";
 
 
 

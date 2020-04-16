@@ -32,3 +32,4 @@ build/
 .vscode/
 
 donate.zip
+/src/main/resources/vue/

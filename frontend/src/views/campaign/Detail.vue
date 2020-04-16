@@ -44,15 +44,16 @@
                                         <div class="progress-label"><span>목표금액 : {{data.campaignDetail[0].cap}}</span></div>
                                     </div>
                                     <div class="progress" style="height: 8px;margin: 1rem 0 0 0; ">
+
+
                                         <div role="progressbar" aria-valuenow="60" aria-valuemin="0"
                                              aria-valuemax="100" class="progress-bar bg-success"
-                                             v-bind:aria-valuenow="data.campaignDetail[0].capPercent" v-bind:style="{'width': data.campaignDetail[0].capPercent+'px;'}"></div>
+                                             v-bind:aria-valuenow="data.campaignDetail[0].capPercent"  v-bind:style="{width: data.campaignDetail[0].capPercent+'%'}"></div>
                                     </div>
 
                                     <div class="progress-percentage">
                                         <span class="pull-left">{{data.campaignDetail[0].totalAmount}}</span>
-                                        <span>{{data.campaignDetail[0].capPercent}}</span>
-
+                                        <span>{{data.campaignDetail[0].capPercent}}%</span>
                                     </div>
                                 </div>
                             </div>
@@ -96,8 +97,10 @@
                                                         <span class="pic" v-bind:style="{'background-image': 'url('+product.thumbnail+')'}" style="background-repeat: no-repeat; background-position: center top; background-size: 150px; ">{{product.name}}</span>
                                                         <h6 class="text-primary text-uppercase text-left">{{product.name}}</h6>
                                                         <p class="description mt-3 txt-overflow-3  text-left text-danger">{{product.price}}원</p>
-
-                                                        <button  type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal" v-on:click="openContents(product.contents)">상세보기</button>
+                                                        <div class="form-inline">
+                                                            <button  type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal" v-on:click="openContents(product.contents)">상세보기</button>
+                                                            <button  v-if="data.campaignDetail[0].status == 1" type="button" class="btn btn-danger" data-toggle="modal" data-target="#confirmModal" v-on:click="openConfirm(data.campaignDetail[0].id,product.id)">인증처리</button>
+                                                        </div>
                                                     </div><!----><!----></div>
                                             </div>
                                         </div>
@@ -107,10 +110,8 @@
                         </div>
                     </div>
                     <div class="card-footer">
-                        <a type="" href="/vue/index.html#/donate/detail?testData=1234" class="btn mt-4 btn-danger"
-                           style="width: 100%;">
-                            기부하기
-                        </a>
+                        <button v-if="data.campaignDetail[0].status == 0" type="button" class="btn mt-4 btn-danger" style="width:100%;" v-on:click="donate(data.campaignDetail[0].id)">기부하기</button>
+                        <button v-if="data.campaignDetail[0].status == 2" type="button" class="btn mt-4 btn-danger" style="width:100%;" v-on:click="refund(data.campaignDetail[0].id)">환불하기</button>
                     </div>
                 </card>
             </div>
@@ -127,6 +128,48 @@
                         </div>
                         <div class="modal-body">
                             <img id="contentsImg" style="width: 100%;height:100%;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="confirmModalLabel">인증처리</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" ref="campaignId">
+                            <input type="hidden" ref="productId">
+
+                            <div v-if="getInvoiceStep == 0">
+                                <div class="form-group">
+                                    <lable>물품 발송을 하실때 인보이스에서 생성되는 번호를 꼭 스티커 부착하여 발송하세요.</lable>
+                                    <input type="text" class="form-control" ref="invoiceMessageV" readonly>
+                                    <input type="text" class="form-control" ref="invoiceMessageR" readonly>
+                                    <input type="text" class="form-control" ref="invoiceMessageS" readonly>
+                                </div>
+
+                            </div>
+                            <div v-if="getInvoiceStep == 1">
+                                <div class="form-group">
+                                    <lable>수신하신 물품에 부착된 스티커에 작성된 번호를 입력하여 처리 완료를 해주세요.</lable>
+                                    <input type="text" class="form-control" ref="invoiceVerifyV">
+                                    <input type="text" class="form-control" ref="invoiceVerifyR">
+                                    <input type="text" class="form-control" ref="invoiceVerifyS">
+                                </div>
+                            </div>
+                            <div v-if="getInvoiceStep == 2">모든 처리가 완료되었습니다.</div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button v-if="getInvoiceStep == 0" type="button" class="btn btn-danger" v-on:click="createInvoice()">인보이스</button>
+                            <button v-if="getInvoiceStep == 1" type="button" class="btn btn-danger" v-on:click="submitReceipt()">수령완료</button>
+                            <button v-if="getInvoiceStep == 2" type="button" class="btn btn-danger" v-on:click="createInvoice()">출금</button>
                         </div>
                     </div>
                 </div>
@@ -160,15 +203,168 @@
                         }
                     ],
                     productList: [],
-                    targetDetail:[]
+                    targetDetail:[],
+                    invoiceStep:0
                 }
             };
         },
+        computed:{
+            getInvoiceStep:function(){
+                return this.data.invoiceStep;
+            }
+        },
         methods: {
+            donate:function(campaignId){
+                alert("donate call : "+campaignId);
+                if(campaignContract==null){
+                    initCampaignContract(new Web3(new Web3.providers.HttpProvider('http://localhost:7545')));
+                }
+                var options={from: '0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851',value:1000000000000000000};
+                window.console.log("options " + options);
+
+                campaignContract.methods.donate(campaignId).send(options, function(error, result) {
+                    window.console.log("getList " + error);
+                    if(result!=null){
+                        alert("정상적으로 기부 되었습니다.");
+                    }``
+                    window.console.log("getList " + result);
+                    window.console.log("getList " + JSON.stringify(result));
+                });
+            },
+            refund:function(campaignId){
+              alert("refund call : "+campaignId);
+                if(campaignContract==null){
+                    initCampaignContract(new Web3(new Web3.providers.HttpProvider('http://localhost:7545')));
+                }
+                var options={from: '0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851',value:0};
+                window.console.log("options " + options);
+
+                campaignContract.methods.refund(campaignId).send(options, function(error, result) {
+                    window.console.log("getList " + error);
+                    if(result!=null){
+                        alert("정상적으로 환불 되었습니다.");
+                    }
+                    window.console.log("getList " + result);
+                    window.console.log("getList " + JSON.stringify(result));
+                });
+            },
+            createInvoice : function(){
+                var campaignId=this.$refs.campaignId.value;
+                var productId=this.$refs.productId.value;
+
+
+                window.console.log("createInvoice");
+                window.console.log("campaignId : "+campaignId);
+                window.console.log("productId : "+productId);
+
+                if(campaignContract==null){
+                    initCampaignContract(new Web3(new Web3.providers.HttpProvider('http://localhost:7545')));
+                }
+                var options={from: '0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851'};
+                window.console.log("options " + options);
+
+                var invoiceMessageV = this.$refs.invoiceMessageV;
+                var invoiceMessageR = this.$refs.invoiceMessageR;
+                var invoiceMessageS = this.$refs.invoiceMessageS;
+
+
+
+                campaignContract.methods.createInvoice(campaignId,productId).send(options)
+                    .on('transactionHash', function(hash){
+                        window.console.log("hash: "+hash);
+                    })
+                    .on('receipt', function(receipt){
+                        window.console.log("receipt: "+receipt);
+                    })
+                    .on('confirmation', function(confirmationNumber, receipt){
+                        window.console.log("confirmationNumber: "+ confirmationNumber);
+                        window.console.log("receipt: "+receipt);
+                        var signMessage=campaignId+productId+"0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851";
+                        var sign=campaignContractWeb.eth.accounts.sign(signMessage,"8e3fef8396e571f86b14f8156f63490ddfe3a746222fa692ea396c6cec50c3e6");
+                        invoiceMessageV.value=sign.v;
+                        invoiceMessageR.value=sign.r;
+                        invoiceMessageS.value=sign.s;
+
+                        alert("정상적으로 인보이스 발행 되었습니다.");
+                    })
+                    .on('error', window.console.log(console.error));
+            },
+            submitReceipt: function(){
+                if(campaignContract==null){
+                    initCampaignContract(new Web3(new Web3.providers.HttpProvider('http://localhost:7545')));
+                }
+                var options={from: '0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851'};
+                window.console.log("options " + options);
+                var campaignId=this.$refs.campaignId.value;
+                var productId=this.$refs.productId.value;
+                var v=this.$refs.invoiceVerifyV.value;
+                var r=this.$refs.invoiceVerifyR.value;
+                var s=this.$refs.invoiceVerifyS.value;
+
+                campaignContract.methods.submitReceipt(campaignId,productId,v,r,s).send(options)
+                    .on('transactionHash', function(hash){
+                        window.console.log("hash: "+hash);
+                    })
+                    .on('receipt', function(receipt){
+                        window.console.log("receipt: "+receipt);
+                    })
+                    .on('confirmation', function(confirmationNumber, receipt){
+                        window.console.log("confirmationNumber: "+ confirmationNumber);
+                        window.console.log("receipt: "+receipt);
+                    })
+                    .on('error', window.console.log(console.error));
+            },
+            withdrawal: function(){
+                if(campaignContract==null){
+                    initCampaignContract(new Web3(new Web3.providers.HttpProvider('http://localhost:7545')));
+                }
+                var options={from: '0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851'};
+                window.console.log("options " + options);
+                var campaignId=this.$refs.campaignId.value;
+                var productId=this.$refs.productId.value;
+
+                campaignContract.methods.withdrawal(campaignId,productId).send(options)
+                    .on('transactionHash', function(hash){
+                        window.console.log("hash: "+hash);
+                    })
+                    .on('receipt', function(receipt){
+                        window.console.log("receipt: "+receipt);
+                    })
+                    .on('confirmation', function(confirmationNumber, receipt){
+                        window.console.log("confirmationNumber: "+ confirmationNumber);
+                        window.console.log("receipt: "+receipt);
+                    })
+                    .on('error', window.console.log(console.error));
+            },
             openContents:function(contents){
                 window.console.log("openContents :"+contents);
                 $("#myModal").show();
                 $("#contentsImg").attr("src", contents);
+            },
+            openConfirm:function(campaignId,productId){
+
+                window.console.log("openConfirm :"+campaignId+" / "+productId);
+                this.$refs.campaignId.value=campaignId;
+                this.$refs.productId.value=productId;
+
+                if(campaignContract==null){
+                    initCampaignContract(new Web3(new Web3.providers.HttpProvider('http://localhost:7545')));
+                }
+                var options={from: '0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851'};
+                window.console.log("options " + options);
+
+
+                var invoiceStep=this.data.invoiceStep;
+
+                campaignContract.methods.getInvoiceStepByCampaign(campaignId,productId).call(options, function(error, result) {
+                    window.console.log("getList " + error);
+                    window.console.log("getList " + result);
+                    invoiceStep=result;
+                });
+
+
+                $("#confirmModal").show();
+
             },
         },
         created(){
@@ -193,8 +389,8 @@
                 var _id=result.id;
                 var _name=result.name;
                 var _thumbnail=result.thumbnail;
-                var _cap=result.cap;
-                var _totalAmount=result.totalAmount;
+                var _cap=Number(result.cap);
+                var _totalAmount=Number(result.totalAmount);
                 var _startTime=Number(result.startTime);
                 var _endTime=Number(result.endTime);
                 var _contents=result.contents;
@@ -202,9 +398,21 @@
                 var _productIdList=result.productIdList;
                 var percent=(_totalAmount/_cap) * 100;
 
-                var startTimeStr=moment(_startTime).format("YYYY-MM-DD");
-                var endTimeStr=moment(_endTime).format("YYYY-MM-DD");
-                var dday=moment(_endTime).endOf('day').fromNow();
+
+                var status=0;
+                var now=new Date().getTime()/1000;
+                if(now<_startTime){
+                    status=-1;
+                }else if(now > _endTime && _totalAmount < _cap){
+                    status=2;
+                }else if(_totalAmount >= _cap){
+                    window.console.log("_totalAmount: "+_totalAmount+" / cap : "+_cap);
+                    status=1;
+                }
+                window.console.log("status : "+status);
+                var startTimeStr=moment((_startTime*1000)).format("YYYY-MM-DD");
+                var endTimeStr=moment((_endTime*1000)).format("YYYY-MM-DD");
+                var dday=moment((_endTime*1000)).endOf('day').fromNow();
                 var detailData={
                     "id": _id,
                     "name": _name,
@@ -219,7 +427,8 @@
                     "contents": _contents,
                     "targetAddress": _tagetAddress,
                     "productIdList": _productIdList,
-                    "capPercent": percent
+                    "capPercent": percent,
+                    "status":status
                 };
                 detail[0]=detailData;
 
@@ -285,6 +494,18 @@
                     window.console.log("hidden.bs.modal");
                     $('#myModal').addClass("fade");
                     $('#myModal').removeClass("show");
+                });
+
+
+                $('#confirmModal').on('shown.bs.modal', function () {
+                    window.console.log("shown.bs.modal");
+                    $('#confirmModal').addClass("show");
+                    $('#confirmModal').removeClass("fade");
+                });
+                $('#confirmModal').on('hidden.bs.modal', function () {
+                    window.console.log("hidden.bs.modal");
+                    $('#confirmModal').addClass("fade");
+                    $('#confirmModal').removeClass("show");
                 });
             });
 

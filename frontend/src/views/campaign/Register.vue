@@ -27,12 +27,12 @@
                                   method="POST" onsubmit="return false;">
                                 <div class="form-group">
                                     <div class="input-group input-group-alternative mb-3">
-                                        <input class="form-control" placeholder="캠페인명" type="text" ref="name">
+                                        <input class="form-control" placeholder="캠페인명" type="text" ref="name" value="캠페인 등록 테스트">
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <div class="input-group input-group-alternative mb-3">
-                                        <input class="form-control" placeholder="캠페인 이미지 URL" type="text" ref="thumbnail">
+                                        <input class="form-control" placeholder="캠페인 이미지 URL" type="text" ref="thumbnail" value="http://localhost:8080/static/캠페인jpg">
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -52,7 +52,7 @@
                                 </div>
                                 <div class="form-group">
                                     <div class="input-group input-group-alternative mb-3">
-                                        <input class="form-control" placeholder="목표금액" type="number" ref="cap">
+                                        <input class="form-control" placeholder="목표금액" type="number" ref="cap" value="100">
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -71,7 +71,7 @@
 
                                 <div class="form-group">
                                     <div class="input-group input-group-alternative mb-3">
-                                        <input class="form-control" placeholder="상품상세 이미지 URL" type="text" ref="contents">
+                                        <input class="form-control" placeholder="상품상세 이미지 URL" type="text" ref="contents" value="http://localhost:8080/static/캠페인상세.png">
                                     </div>
                                 </div>
 
@@ -160,7 +160,6 @@
                         '3개월': [moment().subtract(89, 'days'), moment()],
                         '6개월': [moment().subtract(179, 'days'), moment()],
                     },
-                    minDate: moment(),
                     maxDate: moment().add(6, "month"),
                     locale: daterangepickerlocales.kr
                 });
@@ -172,7 +171,7 @@
                     $("#datefrom_group").val('');
                     $("#startYmd").val('');
                     $("#endYmd").val('');
-                })
+                });
 
                 $("#product").select2({
                     placeholder: "캠페인 상품을 선택하세요.",
@@ -190,8 +189,8 @@
                 var _name=this.$refs.name.value;
                 var _thumbnail=this.$refs.thumbnail.value;
                 var _cap=this.$refs.cap.value;
-                var _startTime=new Date(this.$refs.startTime.value).getTime();
-                var _endTime=new Date(this.$refs.endTime.value).getTime();
+                var _startTime=new Date(this.$refs.startTime.value).getTime()/1000;
+                var _endTime=new Date(this.$refs.endTime.value).getTime()/1000;
                 var _contents=this.$refs.contents.value;
                 var _productSeqList=new Array();
                 _productSeqList.push(this.$refs.productSeqList.value);

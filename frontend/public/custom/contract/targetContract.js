@@ -252,7 +252,7 @@ var targetAbi= [
 function initTargetContract(WEB3){
     contractWeb = WEB3;
     targetContract = new contractWeb.eth.Contract(targetAbi);
-    targetContract.options.address = "0x2A8974F673345644a6564f32E9b521C31FBA9187";
+    targetContract.options.address = "0x62f6Bc1BB4fd303885E50eC845938a6e2Faf07C2";
     targetContract.options.gasPrice ='20000000000';
     targetContract.options.gas =6721975;
 }

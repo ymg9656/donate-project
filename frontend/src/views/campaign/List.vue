@@ -40,12 +40,12 @@
                                         <div class="progress" style="height: 8px;margin: 1rem 0 0 0; ">
                                             <div role="progressbar" aria-valuenow="60" aria-valuemin="0"
                                                  aria-valuemax="100" class="progress-bar bg-success"
-                                                 v-bind:aria-valuenow="campaign.capPercent" v-bind:style="{'width': campaign.capPercent+'px;'}"></div>
+                                                 v-bind:aria-valuenow="campaign.capPercent"  v-bind:style="{ width: campaign.capPercent+'%'}"></div>
                                         </div>
 
                                         <div class="progress-percentage">
                                             <span class="pull-left">{{campaign.totalAmount}}</span>
-                                            <span>{{campaign.capPercent}}</span>
+                                            <span>{{campaign.capPercent}}%</span>
 
                                         </div>
                                     </div>
@@ -94,7 +94,7 @@
                     var status="진행중";
                     var startTime=result[i][5];
                     var endTime=result[i][6];
-                    var now=new Date().getTime();
+                    var now=new Date().getTime()/1000;
                     if(now<startTime){
                         status="진행전";
                     }else if(now > endTime && totalAmount < cap){

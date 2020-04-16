@@ -86,6 +86,31 @@ var campaignAbi= [
         "anonymous": false,
         "inputs": [
             {
+                "indexed": false,
+                "internalType": "bytes32",
+                "name": "campaignId",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "internalType": "bytes32",
+                "name": "productId",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint8",
+                "name": "step",
+                "type": "uint8"
+            }
+        ],
+        "name": "DoWithdrawal",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
                 "indexed": true,
                 "internalType": "address",
                 "name": "previousOwner",
@@ -124,6 +149,31 @@ var campaignAbi= [
             }
         ],
         "name": "Refund",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "bytes32",
+                "name": "campaignId",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "internalType": "bytes32",
+                "name": "productId",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint8",
+                "name": "step",
+                "type": "uint8"
+            }
+        ],
+        "name": "Submit",
         "type": "event"
     },
     {
@@ -461,6 +511,32 @@ var campaignAbi= [
         "type": "function"
     },
     {
+        "constant": true,
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "campaignId",
+                "type": "bytes32"
+            },
+            {
+                "internalType": "bytes32",
+                "name": "productId",
+                "type": "bytes32"
+            }
+        ],
+        "name": "getInvoiceStepByCampaign",
+        "outputs": [
+            {
+                "internalType": "uint8",
+                "name": "",
+                "type": "uint8"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
         "constant": false,
         "inputs": [
             {
@@ -494,12 +570,32 @@ var campaignAbi= [
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "campaignId",
+                "type": "bytes32"
+            },
+            {
+                "internalType": "bytes32",
+                "name": "productId",
+                "type": "bytes32"
+            }
+        ],
+        "name": "withdrawal",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
     }
 ];
 function initCampaignContract(WEB3){
     campaignContractWeb = WEB3;
     campaignContract = new campaignContractWeb.eth.Contract(campaignAbi);
-    campaignContract.options.address = "0x49a7B2c679a263DC339C1dc0d50471F0e269ce9c";
+    campaignContract.options.address = "0xf8f82ABf94dD6B289462418d452DF454f37F281D";
     campaignContract.options.gasPrice ='20000000000';
     campaignContract.options.gas =6721975;
 }
