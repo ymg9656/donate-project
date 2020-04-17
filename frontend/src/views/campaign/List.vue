@@ -65,22 +65,26 @@
 <script>
     import axios from 'axios'
     import Web3 from "web3";
+    import initCampaignContract from "../../contract/initCampaignContract";
+    import initWeb3 from "../../contract/initWeb3";
 
     export default {
         data() {
             return {
                 data:{
-                    campaignList: []
+                    campaignList: [],
+                    campaignContract:null
                 }
             };
         },
-        created(){
-
-            if(campaignContract==null){
-                initCampaignContract(new Web3(new Web3.providers.HttpProvider('http://localhost:7545')));
+        async created(){
+            await initWeb3();
+            if(this.data.campaignContract==null){
+                this.data.campaignContract=initCampaignContract(window.web3);
             }
+
             var list=this.data.campaignList;
-            campaignContract.methods.getCampaignList().call({from: '0x449962EceECE14cDa0EA7FaC770AAE5991a8048B'}, function(error, result){
+            this.data.campaignContract.methods.getCampaignList().call(function(error, result){
                 window.console.log("getList "+ error);
                 window.console.log("getList "+ result);
                 window.console.log("getList "+ JSON.stringify(result));

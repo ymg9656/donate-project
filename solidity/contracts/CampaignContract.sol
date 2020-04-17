@@ -2,6 +2,7 @@ pragma solidity ^0.5.16;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/ownership/Ownable.sol";
+import "@openzeppelin/contracts/cryptography/ECDSA.sol";
 import "./ProductContract.sol";
 import "./TargetContract.sol";
 
@@ -45,8 +46,8 @@ contract CampaignContract is Ownable {
 
 
     //    constructor(ProductContract _productContract, TargetContract _targetContract) public {
-//        productContract = _productContract;
-//        targetContract = _targetContract;
+//        initProductContract = _productContract;
+//        initTargetContract = _targetContract;
 //    }
     constructor() public {
         productContract = new ProductContract();
@@ -171,6 +172,8 @@ contract CampaignContract is Ownable {
         bytes32 message = keccak256(abi.encodePacked(campaignId, productId, msg.sender));
         bytes32 prefixedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n", "32", message));
         address signer = ecrecover(prefixedHash, _v, _r, _s);
+
+        //function recover(bytes32 hash, bytes memory signature) internal pure returns (address) {
 
         ProductContract.Product memory product = productContract.getProduct(productId);
         require(product.supplier == signer);

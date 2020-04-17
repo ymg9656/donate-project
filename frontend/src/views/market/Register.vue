@@ -81,8 +81,8 @@
         },
         methods: {
             contractConnect: function (){
-                if(productContract==null){
-                    initProductContract(new Web3(new Web3.providers.HttpProvider('http://localhost:7545')));
+                if(initProductContract==null){
+                    initProductContract(new Web3(new Web3.providers.HttpProvider('http://localhost:8545')));
                 }
 
 
@@ -93,7 +93,7 @@
                 var _price=this.$refs.price.value;
                 var _contents=this.$refs.contents.value;
 
-                productContract.methods.addProduct(_supplier,_name,_thumbnail,_price,_contents).send({from: '0x449962EceECE14cDa0EA7FaC770AAE5991a8048B'})
+                initProductContract.methods.addProduct(_supplier,_name,_thumbnail,_price,_contents).send({from: '0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851'})
                     .on('transactionHash', function(hash){
                         window.console.log("hash: "+hash);
                     })

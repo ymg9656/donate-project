@@ -175,14 +175,18 @@
                     </div>
                 </div>
             </div>
-
             <button type="button" class="btn btn-danger" v-on:click="testInvoice()">인보이스</button>
+            <button type="button" class="btn btn-danger" v-on:click="testInvoice2()">인보이스2</button>
 
         </section>
     </div>
 </template>
 <script>
     import Web3 from "web3";
+    import initCampaignContract from "../../contract/initCampaignContract";
+    import initWeb3 from "../../contract/initWeb3";
+    import initProductContract from "../../contract/initProductContract";
+    import initTargetContract from "../../contract/initTargetContract";
 
     export default {
         data() { 
@@ -208,7 +212,10 @@
                     ],
                     productList: [],
                     targetDetail:[],
-                    invoiceStep:0
+                    invoiceStep:0,
+                    campaignContract:null,
+                    productContract:null,
+                    targetContract:null
                 }
             };
         },
@@ -223,30 +230,19 @@
             },
             donate:function(campaignId){
                 alert("donate call : "+campaignId);
-                if(campaignContract==null){
-                    initCampaignContract(new Web3(new Web3.providers.HttpProvider('http://localhost:7545')));
-                }
-                var options={from: '0x449962EceECE14cDa0EA7FaC770AAE5991a8048B',value:1000000000000000000};
-                window.console.log("options " + options);
-
-                campaignContract.methods.donate(campaignId).send(options, function(error, result) {
-                    window.console.log("getList " + error);
+                this.data.campaignContract.methods.donate(campaignId).send({value:"1000000000000000000"},function(error, result) {
+                    window.console.log("donate send " + error);
                     if(result!=null){
                         alert("정상적으로 기부 되었습니다.");
                     }
-                    window.console.log("getList " + result);
-                    window.console.log("getList " + JSON.stringify(result));
+                    window.console.log("donate send " + result);
+                    window.console.log("donate send " + JSON.stringify(result));
                 });
             },
             refund:function(campaignId){
               alert("refund call : "+campaignId);
-                if(campaignContract==null){
-                    initCampaignContract(new Web3(new Web3.providers.HttpProvider('http://localhost:7545')));
-                }
-                var options={from: '0x449962EceECE14cDa0EA7FaC770AAE5991a8048B',value:0};
-                window.console.log("options " + options);
 
-                campaignContract.methods.refund(campaignId).send(options, function(error, result) {
+                this.data.campaignContract.methods.refund(campaignId).send(function(error, result) {
                     window.console.log("getList " + error);
                     if(result!=null){
                         alert("정상적으로 환불 되었습니다.");
@@ -256,10 +252,10 @@
                 });
             },
             testInvoice : function(){
-                var signMessage=campaignContractWeb.utils.keccak256(campaignContractWeb.eth.abi.encodeParameters(['bytes32','bytes32','address'],["0x0eb37a4bce6581244ed7c5fc7f948ff80912c882a648cf8a327fd1468936f0b5","0x09e0c8d8b9d21204a316b736373eab7807703dee37104b436dfe5c3861b9ec21","0x449962EceECE14cDa0EA7FaC770AAE5991a8048B"]));
+                var signMessage=campaignContractWeb.utils.keccak256(campaignContractWeb.eth.abi.encodeParameters(['bytes32','bytes32','address'],["0x0eb37a4bce6581244ed7c5fc7f948ff80912c882a648cf8a327fd1468936f0b5","0x09e0c8d8b9d21204a316b736373eab7807703dee37104b436dfe5c3861b9ec21","0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851"]));
                 window.console.log( "signMessage : "+signMessage);
                 var signMessage="abcd";
-                var sign=campaignContractWeb.eth.accounts.sign(signMessage,"6a42628b93c43df10b7efd1c2389ebc234e7b7ba1699cc5a908cd1bebf04686c");
+                var sign=campaignContractWeb.eth.accounts.sign(signMessage,"0x8e3fef8396e571f86b14f8156f63490ddfe3a746222fa692ea396c6cec50c3e6");
                                                                             /*6a42628b93c43df10b7efd1c2389ebc234e7b7ba1699cc5a908cd1bebf04686c*/
 
 
@@ -285,6 +281,11 @@
                 window.console.log("recover 3 :" +JSON.stringify(recover_3));
 
             },
+            testInvoice2 : async function(){
+                /*var sign=window.web3.eth.accounts.sign(signMessage,"0x8e3fef8396e571f86b14f8156f63490ddfe3a746222fa692ea396c6cec50c3e6");*/
+                var sign=await window.web3.eth.sign("abcd",window.web3.defaultAccount);
+                alert(sign);
+            },
             createInvoice : function(){
                 var campaignId=this.$refs.campaignId.value;
                 var productId=this.$refs.productId.value;
@@ -294,51 +295,50 @@
                 window.console.log("campaignId : "+campaignId);
                 window.console.log("productId : "+productId);
 
-                if(campaignContract==null){
-                    initCampaignContract(new Web3(new Web3.providers.HttpProvider('http://localhost:7545')));
-                }
-                var options={from: '0x449962EceECE14cDa0EA7FaC770AAE5991a8048B'};
-                window.console.log("options " + options);
-
                 var invoiceMessageV = this.$refs.invoiceMessageV;
                 var invoiceMessageR = this.$refs.invoiceMessageR;
                 var invoiceMessageS = this.$refs.invoiceMessageS;
 
-
-
-                campaignContract.methods.createInvoice(campaignId,productId).send(options)
+                this.data.campaignContract.methods.createInvoice(campaignId,productId).send()
                     .on('transactionHash', function(hash){
                         window.console.log("hash: "+hash);
                     })
-                    .on('receipt', function(receipt){
-                        window.console.log("receipt: "+receipt);
-                    })
-                    .on('confirmation', function(confirmationNumber, receipt){
-                        window.console.log("confirmationNumber: "+ confirmationNumber);
-                        window.console.log("receipt: "+receipt);
-                        var signMessage=campaignContractWeb.utils.keccak256(campaignContractWeb.eth.abi.encodeParameter(campaignId,productId,0x449962EceECE14cDa0EA7FaC770AAE5991a8048B));
-                        var sign=campaignContractWeb.eth.accounts.sign(signMessage,"6a42628b93c43df10b7efd1c2389ebc234e7b7ba1699cc5a908cd1bebf04686c");
+                    .on('receipt', async function(receipt){
+                        window.console.log("receipt: "+JSON.stringify(receipt));
+                        var signMessage=window.web3.utils.keccak256(window.web3.eth.abi.encodeParameter(campaignId,productId,window.web3.defaultAccount));
+                        /*var sign=window.web3.eth.accounts.sign(signMessage,"0x8e3fef8396e571f86b14f8156f63490ddfe3a746222fa692ea396c6cec50c3e6");*/
+                        var sign=await window.web3.eth.sign(signMessage,window.web3.defaultAccount);
+
                         invoiceMessageV.value=sign.v;
                         invoiceMessageR.value=sign.r;
                         invoiceMessageS.value=sign.s;
 
                         alert("정상적으로 인보이스 발행 되었습니다.");
                     })
+                    .on('confirmation', function(confirmationNumber, receipt){
+                        window.console.log("confirmationNumber: "+ confirmationNumber);
+                        window.console.log("receipt: "+receipt);
+                      /*  var signMessage=window.web3.utils.keccak256(window.web3.eth.abi.encodeParameter(campaignId,productId,window.web3.defaultAccount));
+                        /!*var sign=window.web3.eth.accounts.sign(signMessage,"0x8e3fef8396e571f86b14f8156f63490ddfe3a746222fa692ea396c6cec50c3e6");*!/
+                        var sign=window.web3.eth.personal.sign(signMessage,window.web3.defaultAccount);
+
+                        invoiceMessageV.value=sign.v;
+                        invoiceMessageR.value=sign.r;
+                        invoiceMessageS.value=sign.s;*/
+
+                        alert("정상적으로 인보이스 발행 되었습니다.");
+                    })
                     .on('error', window.console.log(console.error));
             },
             submitReceipt: function(){
-                if(campaignContract==null){
-                    initCampaignContract(new Web3(new Web3.providers.HttpProvider('http://localhost:7545')));
-                }
-                var options={from: '0x449962EceECE14cDa0EA7FaC770AAE5991a8048B'};
-                window.console.log("options " + options);
+
                 var campaignId=this.$refs.campaignId.value;
                 var productId=this.$refs.productId.value;
                 var v=this.$refs.invoiceVerifyV.value;
                 var r=this.$refs.invoiceVerifyR.value;
                 var s=this.$refs.invoiceVerifyS.value;
 
-                campaignContract.methods.submitReceipt(campaignId,productId,v,r,s).send(options)
+                this.data.campaignContract.methods.submitReceipt(campaignId,productId,v,r,s).send()
                     .on('transactionHash', function(hash){
                         window.console.log("hash: "+hash);
                     })
@@ -352,15 +352,12 @@
                     .on('error', window.console.log(console.error));
             },
             withdrawal: function(){
-                if(campaignContract==null){
-                    initCampaignContract(new Web3(new Web3.providers.HttpProvider('http://localhost:7545')));
-                }
-                var options={from: '0x449962EceECE14cDa0EA7FaC770AAE5991a8048B'};
-                window.console.log("options " + options);
+
+
                 var campaignId=this.$refs.campaignId.value;
                 var productId=this.$refs.productId.value;
 
-                campaignContract.methods.withdrawal(campaignId,productId).send(options)
+                this.data.campaignContract.methods.withdrawal(campaignId,productId).send()
                     .on('transactionHash', function(hash){
                         window.console.log("hash: "+hash);
                     })
@@ -384,16 +381,11 @@
                 this.$refs.campaignId.value=campaignId;
                 this.$refs.productId.value=productId;
 
-                if(campaignContract==null){
-                    initCampaignContract(new Web3(new Web3.providers.HttpProvider('http://localhost:7545')));
-                }
-                var options={from: '0x449962EceECE14cDa0EA7FaC770AAE5991a8048B'};
-                window.console.log("options " + options);
 
 
                 var invoiceStep=this.data.invoiceStep;
 
-                campaignContract.methods.getInvoiceStepByCampaign(campaignId,productId).call(options, (error, result) => {
+                this.data.campaignContract.methods.getInvoiceStepByCampaign(campaignId,productId).call((error, result) => {
                     window.console.log("getList " + error);
                     window.console.log("getList " + result);
                     this.data.invoiceStep=result;
@@ -405,10 +397,17 @@
 
             },
         },
-        created(){
-
-            if(campaignContract==null){
-                initCampaignContract(new Web3(new Web3.providers.HttpProvider('http://localhost:7545')));
+        async created(){
+            await initWeb3();
+            if(this.data.campaignContract==null){
+                this.data.campaignContract=initCampaignContract(window.web3);
+            }
+            window.console.log("campaignContract: "+ this.data.campaignContract.options.from);
+            if(this.data.productContract==null){
+                this.data.productContract=initProductContract(window.web3);
+            }
+            if(this.data.targetContract==null){
+                this.data.targetContract=initTargetContract(window.web3);
             }
             var detailThis=this;
 
@@ -418,8 +417,11 @@
             var campaignId=this.$route.query.campaignId;
             var targetDetail=this.data.targetDetail;
 
+            var productContract=this.data.productContract;
+            var targetContract=this.data.targetContract;
 
-            campaignContract.methods.getCampaign(campaignId).call({from: '0x449962EceECE14cDa0EA7FaC770AAE5991a8048B'}, function(error, result){
+
+            this.data.campaignContract.methods.getCampaign(campaignId).call(function(error, result){
                 window.console.log("getList "+ error);
                 window.console.log("getList "+ result);
                 window.console.log("getList "+ JSON.stringify(result));
@@ -470,10 +472,8 @@
                 };
                 detail[0]=detailData;
 
-                if(productContract==null){
-                    initProductContract(new Web3(new Web3.providers.HttpProvider('http://localhost:7545')));
-                }
-                productContract.methods.getProductList(_productIdList).call({from: '0x449962EceECE14cDa0EA7FaC770AAE5991a8048B'}, function(error, result){
+
+                productContract.methods.getProductList(_productIdList).call(function(error, result){
 
                     window.console.log("getList "+ error);
                     window.console.log("getList "+ result);
@@ -493,11 +493,8 @@
                 });
 
 
-                if(targetContract==null){
-                    initTargetContract(new Web3(new Web3.providers.HttpProvider('http://localhost:7545')));
-                }
 
-                targetContract.methods.getTarget(_tagetAddress).call({from: '0x449962EceECE14cDa0EA7FaC770AAE5991a8048B'}, function(error, result){
+                targetContract.methods.getTarget(_tagetAddress).call(function(error, result){
                     var target={
                         "addr": result.addr,
                         "name": result.name,

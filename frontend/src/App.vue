@@ -10,15 +10,22 @@
     </div>
 </template>
 <script>
-import { FadeTransition } from "vue2-transitions";
-import Web3 from "web3";
-export default {
+    import {FadeTransition} from "vue2-transitions";
+    import Web3 from "web3";
+    import initWeb3 from "./contract/initWeb3";
 
-  components: {
-    FadeTransition
-  },
-  mounted(){
+    export default {
 
-  }
-};
+        components: {
+            FadeTransition
+        },
+        created() {
+            if (!window.web3) {
+                initWeb3();
+            }
+        },
+        mounted() {
+
+        }
+    };
 </script>

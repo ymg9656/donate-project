@@ -78,7 +78,7 @@
                     targetList: [],
                     sampleDataList:[
                         {
-                            "addr":"0x449962EceECE14cDa0EA7FaC770AAE5991a8048B",
+                            "addr":"0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851",
                             "name":"왐부아",
                             "thumbnail":"https://media.ci.org/w_300/v1579351913/ChildPhotos/Published/06867133_083607.jpg",
                             "gender":"남",
@@ -128,11 +128,11 @@
         },
         created(){
 
-            if(targetContract==null){
-                initTargetContract(new Web3(new Web3.providers.HttpProvider('http://localhost:7545')));
+            if(initTargetContract==null){
+                initTargetContract(new Web3(new Web3.providers.HttpProvider('http://localhost:8545')));
             }
             var list=this.data.targetList;
-            targetContract.methods.getTargetList().call({from: '0x449962EceECE14cDa0EA7FaC770AAE5991a8048B'}, function(error, result){
+            initTargetContract.methods.getTargetList().call({from: '0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851'}, function(error, result){
                 window.console.log("getList "+ error);
                 window.console.log("getList "+ result);
                 window.console.log("getList "+ JSON.stringify(result));
@@ -162,8 +162,8 @@
 
             },
             dataInit: function (){
-                if(targetContract==null){
-                    initTargetContract(new Web3(new Web3.providers.HttpProvider('http://localhost:7545')));
+                if(initTargetContract==null){
+                    initTargetContract(new Web3(new Web3.providers.HttpProvider('http://localhost:8545')));
                 }
 
                 var list=this.data.sampleDataList;
@@ -176,7 +176,7 @@
                     var _country=list[i].country;
                     var _contents=list[i].contents;
 
-                    targetContract.methods.addTarget(_addr,_name,_thumbnail,_gender,_birthday,_country,_contents).send({from: '0x449962EceECE14cDa0EA7FaC770AAE5991a8048B'})
+                    initTargetContract.methods.addTarget(_addr,_name,_thumbnail,_gender,_birthday,_country,_contents).send({from: '0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851'})
                         .on('transactionHash', function(hash){
                             window.console.log("hash: "+hash);
                         })
