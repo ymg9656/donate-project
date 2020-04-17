@@ -100,8 +100,8 @@
         },
         methods: {
             contractConnect: function (){
-                if(targetContract==null){
-                    initTargetContract(new Web3(new Web3.providers.HttpProvider('http://localhost:7545')));
+                if(initTargetContract==null){
+                    initTargetContract(new Web3(new Web3.providers.HttpProvider('http://localhost:8545')));
                 }
 
                 var _addr=this.$refs.addr.value;
@@ -112,7 +112,7 @@
                 var _country=this.$refs.country.value;
                 var _contents=this.$refs.contents.value;
 
-                targetContract.methods.addTarget(_addr,_name,_thumbnail,_gender,_birthday,_country,_contents).send({from: '0x449962EceECE14cDa0EA7FaC770AAE5991a8048B'})
+                initTargetContract.methods.addTarget(_addr,_name,_thumbnail,_gender,_birthday,_country,_contents).send({from: '0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851'})
                     .on('transactionHash', function(hash){
                         window.console.log("hash: "+hash);
                     })

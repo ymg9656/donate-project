@@ -245,8 +245,7 @@ var productAbi= [
 function initProductContract(WEB3){
     productContractWeb = WEB3;
     productContract = new productContractWeb.eth.Contract(productAbi);
-    productContract.options.address = "0xdFB193923a64F477156975BBDA0898E4F586Aa73";
+    productContract.options.address = "0x4d7d95342692EB505F9C60f1e07542BFa88c1Ac9";
     productContract.options.gasPrice ='20000000000';
-    productContract.options.gas =6721975;
 }
 

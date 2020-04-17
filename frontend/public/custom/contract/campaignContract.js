@@ -595,8 +595,7 @@ var campaignAbi= [
 function initCampaignContract(WEB3){
     campaignContractWeb = WEB3;
     campaignContract = new campaignContractWeb.eth.Contract(campaignAbi);
-    campaignContract.options.address = "0xf8f82ABf94dD6B289462418d452DF454f37F281D";
+    campaignContract.options.address = "0x2FC55110B03a1ad260BA2259f3fD4cAD850A950A";
     campaignContract.options.gasPrice ='20000000000';
-    campaignContract.options.gas =6721975;
 }
 

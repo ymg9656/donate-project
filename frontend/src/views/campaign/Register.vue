@@ -96,21 +96,39 @@
 <script>
     import axios from 'axios';
     import Web3 from 'web3';
+    import initCampaignContract from "../../contract/initCampaignContract";
+    import initProductContract from "../../contract/initProductContract";
+    import initTargetContract from "../../contract/initTargetContract";
+    import initWeb3 from "../../contract/initWeb3";
+
     export default {
         data() {
             return {
                 data:{
-                    targetList: []
-                    ,productList: []
+                    targetList: [],
+                    productList: [],
+                    campaignContract:null,
+                    productContract:null,
+                    targetContract:null
+
                 }
             };
         },
-        created(){
-            if(productContract==null){
-                initProductContract(new Web3(new Web3.providers.HttpProvider('http://localhost:7545')));
+
+        async created(){
+            await initWeb3();
+            if(this.data.campaignContract==null){
+                this.data.campaignContract=initCampaignContract(window.web3);
+            }
+            window.console.log("campaignContract: "+ this.data.campaignContract.options.from);
+            if(this.data.productContract==null){
+                this.data.productContract=initProductContract(window.web3);
+            }
+            if(this.data.targetContract==null){
+                this.data.targetContract=initTargetContract(window.web3);
             }
             var productList=this.data.productList;
-            productContract.methods.getProductList().call({from: '0x449962EceECE14cDa0EA7FaC770AAE5991a8048B'}, function(error, result){
+            this.data.productContract.methods.getProductList().call(function(error, result){
                 for(var i =0; i<result.length;i++){
                     var target={
                         "id":result[i][0],
@@ -124,11 +142,8 @@
                 }
             });
 
-            if(targetContract==null){
-                initTargetContract(new Web3(new Web3.providers.HttpProvider('http://localhost:7545')));
-            }
             var targetList=this.data.targetList;
-            targetContract.methods.getTargetList().call({from: '0x449962EceECE14cDa0EA7FaC770AAE5991a8048B'}, function(error, result){
+            this.data.targetContract.methods.getTargetList().call(function(error, result){
                 window.console.log("getList "+ error);
                 window.console.log("getList "+ result);
                 window.console.log("getList "+ JSON.stringify(result));
@@ -180,9 +195,7 @@
         },
         methods: {
             contractConnect: function (){
-                if(campaignContract==null){
-                    initCampaignContract(new Web3(new Web3.providers.HttpProvider('http://localhost:7545')));
-                }
+
 
                 //address _targetAddress,  string memory _name, string memory _thumbnail,uint _cap, uint _startTime,uint _endTime ,string memory _contents,uint[] memory _productSeqList) public onlyOwner() {
                 var _targetAddress=this.$refs.targetAddress.value;
@@ -195,18 +208,20 @@
                 var _productSeqList=new Array();
                 _productSeqList.push(this.$refs.productSeqList.value);
 
-                campaignContract.methods.addCampaign(_targetAddress,_name,_thumbnail,_cap,_startTime,_endTime,_contents,_productSeqList).send({from: '0x449962EceECE14cDa0EA7FaC770AAE5991a8048B'})
+                this.data.campaignContract.methods.addCampaign(_targetAddress,_name,_thumbnail,_cap,_startTime,_endTime,_contents,_productSeqList).send()
                     .on('transactionHash', function(hash){
                         window.console.log("hash: "+hash);
                     })
                     .on('receipt', function(receipt){
                         window.console.log("receipt: "+receipt);
+                        alert("정상 등록 되었습니다.");
+                        location.href="#/campaign";
                     })
                     .on('confirmation', function(confirmationNumber, receipt){
                         window.console.log("confirmationNumber: "+ confirmationNumber);
                         window.console.log("receipt: "+receipt);
                         alert("정상 등록 되었습니다.");
-                        location.href="http://localhost:8080/vue/index.html#/target";
+                        location.href="#/campaign";
                     })
                     .on('error', window.console.log(console.error));
             },

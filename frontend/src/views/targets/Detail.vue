@@ -110,13 +110,13 @@
         },
         created(){
 
-            if(targetContract==null){
-                initTargetContract(new Web3(new Web3.providers.HttpProvider('http://localhost:7545')));
+            if(initTargetContract==null){
+                initTargetContract(new Web3(new Web3.providers.HttpProvider('http://localhost:8545')));
             }
 
             var _idx=this.$route.params.idx;
             var target=this.data.target;
-            targetContract.methods.getTarget(_idx).call({from: '0x449962EceECE14cDa0EA7FaC770AAE5991a8048B'}, function(error, result){
+            initTargetContract.methods.getTarget(_idx).call({from: '0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851'}, function(error, result){
                 window.console.log("getList "+ error);
                 window.console.log("getList "+ result);
                 window.console.log("getList "+ JSON.stringify(result));
@@ -172,8 +172,8 @@
         },
         methods: {
             contractConnect: function (){
-                if(targetContract==null){
-                    initTargetContract(new Web3(new Web3.providers.HttpProvider('http://localhost:7545')));
+                if(initTargetContract==null){
+                    initTargetContract(new Web3(new Web3.providers.HttpProvider('http://localhost:8545')));
                 }
 
                 var etherAccount=this.$refs.etherAccount.value;
@@ -186,7 +186,7 @@
                 var introduce=$('#introduceDiv').summernote('code');
 
 
-                targetContract.methods.addTarget(etherAccount,profileImage,name,gender,birthday,country,introduce).send({from: '0x449962EceECE14cDa0EA7FaC770AAE5991a8048B'})
+                initTargetContract.methods.addTarget(etherAccount,profileImage,name,gender,birthday,country,introduce).send({from: '0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851'})
                     .on('transactionHash', function(hash){
                         window.console.log("hash: "+hash);
                     })

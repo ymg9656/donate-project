@@ -250,10 +250,12 @@ var targetAbi= [
     }
 ];
 function initTargetContract(WEB3){
+
+    var textFile = Resources.Load<TextAsset>("Text/textFile01");
+
     contractWeb = WEB3;
     targetContract = new contractWeb.eth.Contract(targetAbi);
-    targetContract.options.address = "0x62f6Bc1BB4fd303885E50eC845938a6e2Faf07C2";
+    targetContract.options.address = "0x814AA470E12531A1e8fa7F5Ad4a99BDB2D5401ca";
     targetContract.options.gasPrice ='20000000000';
-    targetContract.options.gas =6721975;
 }
 
