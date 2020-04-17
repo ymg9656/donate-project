@@ -20,6 +20,7 @@ target/
 *.iml
 *.ipr
 
+/src/main/resources/vue/
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
