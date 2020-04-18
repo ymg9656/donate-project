@@ -25,19 +25,27 @@
                         <template>
                             <form role="form" name="registerForm" id="registerForm" action="/rest/member/register"
                                   method="POST" onsubmit="return false;">
+
+                                <div class="input-group input-group-alternative mb-3">
+                                    <select class="form-control" id="sampleSelect" ref="sampleData"  v-on:change="sampleChange()">
+                                        <option value="-1">샘플 데이터를 선택하세요.</option>
+                                        <option v-bind:value="index"  v-bind:key="sample" v-for="(sample,index) in data.sampleDataList">{{sample.name}}</option>
+                                    </select>
+                                </div>
                                 <div class="form-group">
                                     <div class="input-group input-group-alternative mb-3">
-                                        <input class="form-control" placeholder="캠페인명" type="text" ref="name" value="캠페인 등록 테스트">
+                                        <input class="form-control" placeholder="캠페인명" type="text" ref="name" >
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <div class="input-group input-group-alternative mb-3">
-                                        <input class="form-control" placeholder="캠페인 이미지 URL" type="text" ref="thumbnail" value="http://localhost:8080/static/캠페인jpg">
+                                        <input class="form-control" placeholder="캠페인 이미지 URL" type="text" ref="thumbnail">
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <div class="input-group input-group-alternative mb-3">
                                         <select class="form-control" name="target" ref="targetAddress">
+                                            <option value="-1">후원 대상을 선택하세요.</option>
                                             <option v-bind:key="target" v-for="target in data.targetList" v-bind:value="target.addr">{{target.name}}</option>
                                         </select>
                                     </div>
@@ -52,7 +60,7 @@
                                 </div>
                                 <div class="form-group">
                                     <div class="input-group input-group-alternative mb-3">
-                                        <input class="form-control" placeholder="목표금액" type="number" ref="cap" value="100">
+                                        <input class="form-control" placeholder="목표금액" type="number" ref="cap" >
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -71,7 +79,7 @@
 
                                 <div class="form-group">
                                     <div class="input-group input-group-alternative mb-3">
-                                        <input class="form-control" placeholder="상품상세 이미지 URL" type="text" ref="contents" value="http://localhost:8080/static/캠페인상세.png">
+                                        <input class="form-control" placeholder="상품상세 이미지 URL" type="text" ref="contents" >
                                     </div>
                                 </div>
 
@@ -109,7 +117,33 @@
                     productList: [],
                     campaignContract:null,
                     productContract:null,
-                    targetContract:null
+                    targetContract:null,
+                    sampleDataList:[//세이브더칠드런 데이터
+                        {
+                            "targetAddress":"0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851",
+                            "name":"홀로, 오롯이 아픔을 견디는 지온이",
+                            "thumbnail":"https://www.sc.or.kr/upload/campaign/campaign_1587022944281.jpg",
+                            "cap":3000000000000000000,
+                            "contents":"https://www.sc.or.kr/upload/campaign/campaign_1587081501820.jpg"
+                        },
+
+
+                        {
+                            "targetAddress":"0x5c2227605a689BfeEf2AD126cC53660F3d19e306",
+                            "name":"까막눈 할배와 재윤이의 봄",
+                            "thumbnail":"https://www.sc.or.kr/upload/campaign/campaign_1583309975531.jpg",
+                            "cap":3000000000000000000,
+                            "contents":"https://www.sc.or.kr/upload/campaign/campaign_1583309757954.jpg"
+                        },
+                        {
+
+                            "targetAddress":"0xc6776Feb4ddc0ece798240aad63116B322C5c8f9",
+                            "name":"여섯 살 서연이 이야기",
+                            "thumbnail":"https://www.sc.or.kr/upload/campaign/campaign_1586390569310.jpg",
+                            "cap":3000000000000000000,
+                            "contents":"https://www.sc.or.kr/upload/Editor/2020/editor_1586390592895.jpg"
+                        },
+                    ],
 
                 }
             };
@@ -127,6 +161,7 @@
             if(this.data.targetContract==null){
                 this.data.targetContract=initTargetContract(window.web3);
             }
+
             var productList=this.data.productList;
             this.data.productContract.methods.getProductList().call(function(error, result){
                 for(var i =0; i<result.length;i++){
@@ -193,7 +228,32 @@
                 });
             });
         },
+
         methods: {
+            sampleChange:function(){
+
+
+                var sampleDataObj=this.data.sampleDataList[$("#sampleSelect").val()];
+
+                this.$refs.targetAddress.value=sampleDataObj.targetAddress;
+                this.$refs.name.value=sampleDataObj.name;
+                this.$refs.thumbnail.value=sampleDataObj.thumbnail;
+                this.$refs.cap.value=sampleDataObj.cap;
+                this.$refs.contents.value=sampleDataObj.contents;
+
+
+                var startDt=moment().subtract(15, 'days').format("YYYY-MM-DD");
+                var endDt=moment().add(15, 'days').format("YYYY-MM-DD");
+
+                $("#datefrom_group").data('daterangepicker').setStartDate(startDt);
+                $("#datefrom_group").data('daterangepicker').setEndDate(endDt);
+
+                $('#startYmd').val(startDt);
+                $('#endYmd').val(endDt);
+
+
+
+            },
             contractConnect: function (){
 
 
@@ -205,9 +265,8 @@
                 var _startTime=new Date(this.$refs.startTime.value).getTime()/1000;
                 var _endTime=new Date(this.$refs.endTime.value).getTime()/1000;
                 var _contents=this.$refs.contents.value;
-                var _productSeqList=new Array();
-                _productSeqList.push(this.$refs.productSeqList.value);
-
+                var _productSeqList=$("#product").val();
+                window.console.log(_productSeqList);
                 this.data.campaignContract.methods.addCampaign(_targetAddress,_name,_thumbnail,_cap,_startTime,_endTime,_contents,_productSeqList).send()
                     .on('transactionHash', function(hash){
                         window.console.log("hash: "+hash);
@@ -220,8 +279,6 @@
                     .on('confirmation', function(confirmationNumber, receipt){
                         window.console.log("confirmationNumber: "+ confirmationNumber);
                         window.console.log("receipt: "+receipt);
-                        alert("정상 등록 되었습니다.");
-                        location.href="#/campaign";
                     })
                     .on('error', window.console.log(console.error));
             },

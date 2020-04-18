@@ -2,7 +2,6 @@ pragma solidity ^0.5.16;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/ownership/Ownable.sol";
-import "@openzeppelin/contracts/cryptography/ECDSA.sol";
 import "./ProductContract.sol";
 import "./TargetContract.sol";
 
@@ -45,14 +44,10 @@ contract CampaignContract is Ownable {
     event DoWithdrawal(bytes32 campaignId,bytes32 productId,uint8 step);
 
 
-    //    constructor(ProductContract _productContract, TargetContract _targetContract) public {
-//        initProductContract = _productContract;
-//        initTargetContract = _targetContract;
-//    }
-    constructor() public {
-        productContract = new ProductContract();
-        targetContract = new TargetContract();
-        targetContract.transferOwnership(msg.sender);
+    constructor(ProductContract _productContract, TargetContract _targetContract) public {
+        productContract = _productContract;
+        targetContract = _targetContract;
+        //targetContract.transferOwnership(msg.sender);
     }
 
     bytes32[] campaignIdList;
@@ -102,7 +97,23 @@ contract CampaignContract is Ownable {
     function getCampaign(bytes32 _id) public view returns (Campaign memory){
         return campaignMap[_id];
     }
+    function getCampaignWithInvoice(bytes32 _id) public view returns (Campaign memory,Invoice[] memory){
 
+        Campaign memory c=campaignMap[_id];
+
+        uint productLength=c.productIdList.length;
+        Invoice[] memory invoiceList=new Invoice[](productLength);
+
+        for(uint i = 0; i < productLength; i++){
+            Invoice memory memInvoice;
+            bytes32 productid=c.productIdList[i];
+            memInvoice.productId=productid;
+            Invoice storage invoice = invoiceMap[c.id][productid];
+			memInvoice.step=invoice.step;
+			invoiceList[i]=memInvoice;
+        }
+        return (c,invoiceList);
+    }
     function donate(bytes32 campaignId) public payable {
         Campaign storage campaign = campaignMap[campaignId];
         require(campaign.id != bytes32(0));
@@ -172,8 +183,6 @@ contract CampaignContract is Ownable {
         bytes32 message = keccak256(abi.encodePacked(campaignId, productId, msg.sender));
         bytes32 prefixedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n", "32", message));
         address signer = ecrecover(prefixedHash, _v, _r, _s);
-
-        //function recover(bytes32 hash, bytes memory signature) internal pure returns (address) {
 
         ProductContract.Product memory product = productContract.getProduct(productId);
         require(product.supplier == signer);

@@ -12,12 +12,12 @@
         </div>
         <div class="container">
             <div class="header">
-                <h1 id="forms" class="pull-left text-white" style="color: #ffff;">마켓상품 목록</h1>
-                <router-link class="pull-right btn btn-info btn-icon-clipboard" to="/market/register"
+                <h1 id="forms" class="pull-left text-white" style="color: #ffff;">물품 목록</h1>
+                <router-link class="pull-right btn btn-info btn-icon-clipboard" to="/product/register"
                              data-clipboard-text="fat-add">
                     <div><i class="ni ni-fat-add"></i> <span>신규등록</span></div>
                 </router-link>
-                <button class="pull-right btn btn-danger" v-on:click="dataInit()">데이터 셋팅</button>
+                <!--<button class="pull-right btn btn-danger" v-on:click="dataInit()">데이터 셋팅</button>-->
                 <div style="clear: both;"></div>
             </div>
 
@@ -65,6 +65,10 @@
 <script>
     import axios from 'axios'
     import Web3 from "web3";
+    import initProductContract from "../../contract/initProductContract";
+    import initWeb3 from "../../contract/initWeb3";
+
+
     export default {
         data() {
             return {
@@ -92,17 +96,19 @@
                             "price":10,
                             "contents":"http://localhost:8080/static/생수.png"
                         },*/
-                    ]
+                    ],
+                    productContract:null
                 }
             };
         },
-        created(){
-
-            if(initProductContract==null){
-                initProductContract(new Web3(new Web3.providers.HttpProvider('http://localhost:8545')));
+        async created(){
+            await initWeb3();
+            if(this.data.productContract==null){
+                this.data.productContract=initProductContract(window.web3);
             }
+
             var list=this.data.productList;
-            initProductContract.methods.getProductList().call({from: '0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851'}, function(error, result){
+            this.data.productContract.methods.getProductList().call(function(error, result){
 
                 window.console.log("getList "+ error);
                 window.console.log("getList "+ result);
@@ -131,9 +137,7 @@
                 $("#contentsImg").attr("src", contents);
             },
             dataInit: function (){
-                if(initProductContract==null){
-                    initProductContract(new Web3(new Web3.providers.HttpProvider('http://localhost:8545')));
-                }
+
 
                 var list=this.data.sampleDataList;
                 for(var i = 0; i<list.length; i++){
@@ -142,19 +146,19 @@
                     var _thumbnail=list[i].thumbnail;
                     var _price=list[i].price;
                     var _contents=list[i].contents;
-                    initProductContract.methods.addProduct(_supplier,_name,_thumbnail,_price,_contents).send({from: '0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851'})
+                    this.data.productContract.methods.addProduct(_supplier,_name,_thumbnail,_price,_contents).send()
                         .on('transactionHash', function(hash){
                             window.console.log("hash: "+hash);
                         })
                         .on('receipt', function(receipt){
                             window.console.log("receipt: "+receipt);
+                            alert("정상 등록 되었습니다.");
+                            location.href="http://localhost:8080/vue/index.html#/product";
                         })
                         .on('confirmation', function(confirmationNumber, receipt){
                             window.console.log("confirmationNumber: "+ confirmationNumber);
                             window.console.log("receipt: "+receipt);
-                            alert("정상 등록 되었습니다.");
-                            location.href="http://localhost:8080/vue/index.html#/market";
-                        })
+                         })
                         .on('error', window.console.log(console.error));
                 }
             },

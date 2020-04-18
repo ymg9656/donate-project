@@ -17,7 +17,7 @@
                              data-clipboard-text="fat-add">
                     <div><i class="ni ni-fat-add"></i> <span>신규등록</span></div>
                 </router-link>
-                <button class="pull-right btn btn-danger" v-on:click="dataInit()">데이터 셋팅</button>
+                <!--<button class="pull-right btn btn-danger" v-on:click="dataInit()">데이터 셋팅</button>-->
                 <div style="clear: both;"></div>
             </div>
 
@@ -34,7 +34,7 @@
                                 <div class="card-body py-5">
                                     <span class="pic" v-bind:style="{'background-image': 'url('+target.thumbnail+')'}" style="background-repeat: no-repeat; background-position: center top; background-size: 150px; ">양육어린이사진</span>
                                     <h6 class="text-primary text-uppercase">{{target.name}}({{target.country}})</h6>
-                                    <small>생년월일: {{target.birthday}} | 성별: {{target.gender}}</small>
+                                    <p class="description mt-3 txt-overflow-3">생년월일: {{target.birthday}} | 성별: {{target.gender}}</p>
 
                                     <button  type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal" v-on:click="openContents(target.contents)">상세보기</button>
                                 </div><!----><!----></div>
@@ -69,22 +69,24 @@
 <script>
     import axios from 'axios'
     import Web3 from "web3";
-
+    import initWeb3 from "../../contract/initWeb3";
+    import initTargetContract from "../../contract/initTargetContract";
 
     export default {
         data() {
             return {
                 data:{
+                    targetContract:null,
                     targetList: [],
                     sampleDataList:[
                         {
                             "addr":"0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851",
-                            "name":"왐부아",
-                            "thumbnail":"https://media.ci.org/w_300/v1579351913/ChildPhotos/Published/06867133_083607.jpg",
-                            "gender":"남",
-                            "birthday":"2012.12.29",
-                            "country":"케냐",
-                            "contents":"http://localhost:8080/static/왐부아.png"
+                            "name":"김지온",
+                            "thumbnail":"https://www.sc.or.kr/upload/campaign/campaign_1587022944281.jpg",
+                            "gender":"여",
+                            "birthday":"2016.03.15",
+                            "country":"대한민국",
+                            "contents":"https://www.sc.or.kr/upload/campaign/campaign_1587081446561.jpg"
                         },
                         /*{
                             "addr":"0x5c2227605a689BfeEf2AD126cC53660F3d19e306",
@@ -126,13 +128,14 @@
                 }
             };
         },
-        created(){
-
-            if(initTargetContract==null){
-                initTargetContract(new Web3(new Web3.providers.HttpProvider('http://localhost:8545')));
+        async created(){
+            await initWeb3();
+            if(this.data.targetContract==null){
+                this.data.targetContract=initTargetContract(window.web3);
             }
+
             var list=this.data.targetList;
-            initTargetContract.methods.getTargetList().call({from: '0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851'}, function(error, result){
+            this.data.targetContract.methods.getTargetList().call(function(error, result){
                 window.console.log("getList "+ error);
                 window.console.log("getList "+ result);
                 window.console.log("getList "+ JSON.stringify(result));
@@ -162,10 +165,6 @@
 
             },
             dataInit: function (){
-                if(initTargetContract==null){
-                    initTargetContract(new Web3(new Web3.providers.HttpProvider('http://localhost:8545')));
-                }
-
                 var list=this.data.sampleDataList;
                 for(var i = 0; i<list.length; i++){
                     var _addr=list[i].addr;
@@ -176,18 +175,19 @@
                     var _country=list[i].country;
                     var _contents=list[i].contents;
 
-                    initTargetContract.methods.addTarget(_addr,_name,_thumbnail,_gender,_birthday,_country,_contents).send({from: '0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851'})
+                    this.data.targetContract.methods.addTarget(_addr,_name,_thumbnail,_gender,_birthday,_country,_contents).send()
                         .on('transactionHash', function(hash){
                             window.console.log("hash: "+hash);
                         })
                         .on('receipt', function(receipt){
                             window.console.log("receipt: "+receipt);
+                            alert("정상 등록 되었습니다.");
+                            location.href="http://localhost:8080/vue/index.html#/target";
                         })
                         .on('confirmation', function(confirmationNumber, receipt){
                             window.console.log("confirmationNumber: "+ confirmationNumber);
                             window.console.log("receipt: "+receipt);
-                            alert("정상 등록 되었습니다.");
-                            location.href="http://localhost:8080/vue/index.html#/target";
+
                         })
                         .on('error', window.console.log(console.error));
                 }

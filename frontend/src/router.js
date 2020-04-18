@@ -9,13 +9,10 @@ import Register from "./views/Register.vue";
 import List from "./views/List.vue";
 import Detail from "./views/Detail.vue";
 import Profile from "./views/Profile.vue";
-import Donate from "./views/donate/List.vue";
-import DonateDetail from "./views/donate/Detail.vue";
 
 
-import Market from "./views/market/List.vue";
-import MarketDetail from "./views/market/Detail.vue";
-import MarketRegister from "./views/market/Register.vue";
+import Product from "./views/product/List.vue";
+import ProductRegister from "./views/product/Register.vue";
 
 import Campaign from "./views/campaign/List.vue";
 import CampaignDetail from "./views/campaign/Detail.vue";
@@ -23,7 +20,6 @@ import CampaignRegister from "./views/campaign/Register.vue";
 
 
 import Target from "./views/targets/List.vue";
-import TargetDetail from "./views/targets/Detail.vue";
 import TargetRegister from "./views/targets/Register.vue";
 
 
@@ -94,47 +90,20 @@ export default new Router({
       }
     },
     {
-      path: "/donate",
-      name: "donate",
+      path: "/product",
+      name: "product",
       components: {
         header: AppHeader,
-        default: Donate,
+        default: Product,
         footer: AppFooter
       }
     },
     {
-      path: "/donate/detail",
-      name: "donateDetail",
+      path: "/product/register",
+      name: "productRegister",
       components: {
         header: AppHeader,
-        default: DonateDetail,
-        footer: AppFooter
-      }
-    },
-    {
-      path: "/market",
-      name: "market",
-      components: {
-        header: AppHeader,
-        default: Market,
-        footer: AppFooter
-      }
-    },
-    {
-      path: "/market/register",
-      name: "marketRegister",
-      components: {
-        header: AppHeader,
-        default: MarketRegister,
-        footer: AppFooter
-      }
-    },
-    {
-      path: "/market/detail",
-      name: "marketDetail",
-      components: {
-        header: AppHeader,
-        default: MarketDetail,
+        default: ProductRegister,
         footer: AppFooter
       }
     },
@@ -171,15 +140,6 @@ export default new Router({
       components: {
         header: AppHeader,
         default: Target,
-        footer: AppFooter
-      }
-    },
-    {
-      path: "/target/detail",
-      name: "targetDetail",
-      components: {
-        header: AppHeader,
-        default: TargetDetail,
         footer: AppFooter
       }
     },

@@ -13,7 +13,7 @@
         </section>
         <section class="section section-skew">
             <div class="container">
-                <card shadow class="card-profile mt--300" no-body>
+                <card shadow class="card-profile mt--300" no-body style="margin-top: -495px !important;">
                     <div class="px-4">
                         <div class="row justify-content-center">
                             <div class="col-lg-12 order-lg-1">
@@ -94,12 +94,17 @@
                                             <div class="col-lg-4 margin-bottom-10" v-bind:key="product" v-for="product in data.productList">
                                                 <div class="card border-0 shadow"><!---->
                                                     <div class="card-body">
+                                                        <span v-if="getInvoiceStepByProductId(product.id) == 3" class="badge text-uppercase badge-warning margin-bottom-10">완료</span>
                                                         <span class="pic" v-bind:style="{'background-image': 'url('+product.thumbnail+')'}" style="background-repeat: no-repeat; background-position: center top; background-size: 150px; ">{{product.name}}</span>
                                                         <h6 class="text-primary text-uppercase text-left">{{product.name}}</h6>
                                                         <p class="description mt-3 txt-overflow-3  text-left text-danger">{{product.price}}원</p>
-                                                        <div class="form-inline">
+                                                        <div class="form-group">
                                                             <button  type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal" v-on:click="openContents(product.contents)">상세보기</button>
-                                                            <button  v-if="data.campaignDetail[0].status == 1" type="button" class="btn btn-danger" data-toggle="modal" data-target="#confirmModal" v-on:click="openConfirm(data.campaignDetail[0].id,product.id)">인증처리</button>
+                                                            <div class="pull-right">
+                                                            <button  v-if="getInvoiceStepByProductId(product.id) == 0" type="button" class="btn btn-danger" data-toggle="modal" data-target="#confirmModal" v-on:click="openConfirm(product.id)">인보이스</button>
+                                                            <button  v-if="getInvoiceStepByProductId(product.id) == 1" type="button" class="btn btn-danger" data-toggle="modal" data-target="#confirmModal" v-on:click="openConfirm(product.id)">수령확인</button>
+                                                            <button  v-if="getInvoiceStepByProductId(product.id) == 2" type="button" class="btn btn-danger" data-toggle="modal" data-target="#confirmModal" v-on:click="openConfirm(product.id)">출금</button>
+                                                            </div>
                                                         </div>
                                                     </div><!----><!----></div>
                                             </div>
@@ -143,7 +148,7 @@
                             </button>
                         </div>
                         <div class="modal-body">
-                            <input type="hidden" ref="campaignId">
+                            <input type="hidden" ref="campaignId" v-bind:value="data.campaignDetail[0].id">
                             <input type="hidden" ref="productId">
 
                             <div v-if="getInvoiceStep == 0">
@@ -167,17 +172,13 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-danger" v-on:click="checkInvoice()">체크</button>
                             <button v-if="getInvoiceStep == 0" type="button" class="btn btn-danger" v-on:click="createInvoice()">인보이스</button>
                             <button v-if="getInvoiceStep == 1" type="button" class="btn btn-danger" v-on:click="submitReceipt()">수령완료</button>
-                            <button v-if="getInvoiceStep == 2" type="button" class="btn btn-danger" v-on:click="createInvoice()">출금</button>
+                            <button v-if="getInvoiceStep == 2" type="button" class="btn btn-danger" v-on:click="withdrawal()">출금</button>
                         </div>
                     </div>
                 </div>
             </div>
-            <button type="button" class="btn btn-danger" v-on:click="testInvoice()">인보이스</button>
-            <button type="button" class="btn btn-danger" v-on:click="testInvoice2()">인보이스2</button>
-
         </section>
     </div>
 </template>
@@ -215,18 +216,29 @@
                     invoiceStep:0,
                     campaignContract:null,
                     productContract:null,
-                    targetContract:null
+                    targetContract:null,
+                    invoiceList:[]
                 }
             };
         },
         computed:{
             getInvoiceStep:function(){
                 return this.data.invoiceStep;
-            }
+            },
         },
         methods: {
-            checkInvoice: function(){
-              alert(this.data.invoiceStep) ;
+            getInvoiceStepByProductId:function(productId){
+                window.console.log("getInvoiceStepByProductId: "+this.data.invoiceList.length);
+                for(var i=0; i < this.data.invoiceList.length; i++){
+                    var invoice=this.data.invoiceList[i];
+                    window.console.log("getInvoiceStepByProductId : "+productId+" / "+invoice.productId);
+                    if(invoice.productId==productId){
+                        window.console.log("getInvoiceStepByProductId return : "+invoice.step);
+                        return invoice.step;
+                    }
+                }
+                var defaultStep=this.data.campaignDetail[0].status==1 ? 0 : -1;
+                return defaultStep;
             },
             donate:function(campaignId){
                 alert("donate call : "+campaignId);
@@ -251,41 +263,6 @@
                     window.console.log("getList " + JSON.stringify(result));
                 });
             },
-            testInvoice : function(){
-                var signMessage=campaignContractWeb.utils.keccak256(campaignContractWeb.eth.abi.encodeParameters(['bytes32','bytes32','address'],["0x0eb37a4bce6581244ed7c5fc7f948ff80912c882a648cf8a327fd1468936f0b5","0x09e0c8d8b9d21204a316b736373eab7807703dee37104b436dfe5c3861b9ec21","0xe84A7beD02428f3Feb2b7141a74be2DDD1b7C851"]));
-                window.console.log( "signMessage : "+signMessage);
-                var signMessage="abcd";
-                var sign=campaignContractWeb.eth.accounts.sign(signMessage,"0x8e3fef8396e571f86b14f8156f63490ddfe3a746222fa692ea396c6cec50c3e6");
-                                                                            /*6a42628b93c43df10b7efd1c2389ebc234e7b7ba1699cc5a908cd1bebf04686c*/
-
-
-                window.console.log( JSON.stringify(sign));
-
-                var recover_1 = campaignContractWeb.eth.accounts.recover({
-                    messageHash: sign.messageHash,
-                    v: sign.v,
-                    r: sign.r,
-                    s: sign.s
-                });
-                window.console.log("recover 1 :" +JSON.stringify(recover_1));
-
-
-
-                // message, signature
-                var recover_2 = campaignContractWeb.eth.accounts.recover(signMessage, sign.signature);
-                window.console.log("recover 2 :" +JSON.stringify(recover_2));
-
-
-                // message, v, r, s
-                var recover_3 = campaignContractWeb.eth.accounts.recover(signMessage, sign.v, sign.r, sign.s);
-                window.console.log("recover 3 :" +JSON.stringify(recover_3));
-
-            },
-            testInvoice2 : async function(){
-                /*var sign=window.web3.eth.accounts.sign(signMessage,"0x8e3fef8396e571f86b14f8156f63490ddfe3a746222fa692ea396c6cec50c3e6");*/
-                var sign=await window.web3.eth.sign("abcd",window.web3.defaultAccount);
-                alert(sign);
-            },
             createInvoice : function(){
                 var campaignId=this.$refs.campaignId.value;
                 var productId=this.$refs.productId.value;
@@ -295,38 +272,35 @@
                 window.console.log("campaignId : "+campaignId);
                 window.console.log("productId : "+productId);
 
-                var invoiceMessageV = this.$refs.invoiceMessageV;
-                var invoiceMessageR = this.$refs.invoiceMessageR;
-                var invoiceMessageS = this.$refs.invoiceMessageS;
+                var invoiceMessageR=this.$refs.invoiceMessageR;
+                var invoiceMessageV=this.$refs.invoiceMessageV;
+                var invoiceMessageS=this.$refs.invoiceMessageS;
 
+                var targetAddress=this.data.campaignDetail[0].targetAddress;
                 this.data.campaignContract.methods.createInvoice(campaignId,productId).send()
                     .on('transactionHash', function(hash){
                         window.console.log("hash: "+hash);
                     })
                     .on('receipt', async function(receipt){
                         window.console.log("receipt: "+JSON.stringify(receipt));
-                        var signMessage=window.web3.utils.keccak256(window.web3.eth.abi.encodeParameter(campaignId,productId,window.web3.defaultAccount));
-                        /*var sign=window.web3.eth.accounts.sign(signMessage,"0x8e3fef8396e571f86b14f8156f63490ddfe3a746222fa692ea396c6cec50c3e6");*/
-                        var sign=await window.web3.eth.sign(signMessage,window.web3.defaultAccount);
 
-                        invoiceMessageV.value=sign.v;
-                        invoiceMessageR.value=sign.r;
-                        invoiceMessageS.value=sign.s;
 
-                        alert("정상적으로 인보이스 발행 되었습니다.");
+                        var soliditySha3Msg=window.web3.utils.soliditySha3(campaignId,productId,targetAddress);
+                        window.web3.eth.personal.sign(soliditySha3Msg, window.web3.eth.defaultAccount).then((result) => {
+
+                            invoiceMessageR.value = result.slice(0,66);
+                            invoiceMessageS.value ='0x' + result.slice(66,130);
+                            invoiceMessageV.value ='0x' + result.slice(130,132);
+
+                            alert("정상적으로 인보이스 발행 되었습니다.");
+
+
+                        });
+
                     })
                     .on('confirmation', function(confirmationNumber, receipt){
                         window.console.log("confirmationNumber: "+ confirmationNumber);
                         window.console.log("receipt: "+receipt);
-                      /*  var signMessage=window.web3.utils.keccak256(window.web3.eth.abi.encodeParameter(campaignId,productId,window.web3.defaultAccount));
-                        /!*var sign=window.web3.eth.accounts.sign(signMessage,"0x8e3fef8396e571f86b14f8156f63490ddfe3a746222fa692ea396c6cec50c3e6");*!/
-                        var sign=window.web3.eth.personal.sign(signMessage,window.web3.defaultAccount);
-
-                        invoiceMessageV.value=sign.v;
-                        invoiceMessageR.value=sign.r;
-                        invoiceMessageS.value=sign.s;*/
-
-                        alert("정상적으로 인보이스 발행 되었습니다.");
                     })
                     .on('error', window.console.log(console.error));
             },
@@ -337,6 +311,14 @@
                 var v=this.$refs.invoiceVerifyV.value;
                 var r=this.$refs.invoiceVerifyR.value;
                 var s=this.$refs.invoiceVerifyS.value;
+
+                window.console.log("------submitReceipt-------");
+                window.console.log("campaignId: "+campaignId);
+                window.console.log("productId: "+productId);
+                window.console.log("v: "+v);
+                window.console.log("r: "+r);
+                window.console.log("s: "+s);
+
 
                 this.data.campaignContract.methods.submitReceipt(campaignId,productId,v,r,s).send()
                     .on('transactionHash', function(hash){
@@ -375,24 +357,14 @@
                 $("#myModal").show();
                 $("#contentsImg").attr("src", contents);
             },
-            openConfirm:function(campaignId,productId){
-
-                window.console.log("openConfirm :"+campaignId+" / "+productId);
-                this.$refs.campaignId.value=campaignId;
+            openConfirm:function(productId){
                 this.$refs.productId.value=productId;
-
-
-
-                var invoiceStep=this.data.invoiceStep;
-
-                this.data.campaignContract.methods.getInvoiceStepByCampaign(campaignId,productId).call((error, result) => {
-                    window.console.log("getList " + error);
-                    window.console.log("getList " + result);
-                    this.data.invoiceStep=result;
-                    window.console.log("this.data.invoiceStep " + this.data.invoiceStep);
-                });
-
-
+                for(var i=0; i < this.data.invoiceList.length; i++){
+                    var invoice=this.data.invoiceList[i];
+                    if(invoice.productId==productId){
+                        this.data.invoiceStep=invoice.step;
+                    }
+                }
                 $("#confirmModal").show();
 
             },
@@ -412,6 +384,7 @@
             var detailThis=this;
 
             var detail=this.data.campaignDetail;
+            var invoiceList=this.data.invoiceList;
 
             var productList=this.data.productList;
             var campaignId=this.$route.query.campaignId;
@@ -421,23 +394,34 @@
             var targetContract=this.data.targetContract;
 
 
-            this.data.campaignContract.methods.getCampaign(campaignId).call(function(error, result){
-                window.console.log("getList "+ error);
-                window.console.log("getList "+ result);
-                window.console.log("getList "+ JSON.stringify(result));
+            this.data.campaignContract.methods.getCampaignWithInvoice(campaignId).call(function(error, result){
+                window.console.log("getCampaign "+ error);
+                window.console.log("getCampaign "+ result);
 
-                var _id=result.id;
-                var _name=result.name;
-                var _thumbnail=result.thumbnail;
-                var _cap=Number(result.cap);
-                var _totalAmount=Number(result.totalAmount);
-                var _startTime=Number(result.startTime);
-                var _endTime=Number(result.endTime);
-                var _contents=result.contents;
-                var _tagetAddress=result.targetAddress;
-                var _productIdList=result.productIdList;
+                var _id=result[0].id;
+                var _name=result[0].name;
+                var _thumbnail=result[0].thumbnail;
+                var _cap=Number(result[0].cap);
+                var _totalAmount=Number(result[0].totalAmount);
+                var _startTime=Number(result[0].startTime);
+                var _endTime=Number(result[0].endTime);
+                var _contents=result[0].contents;
+                var _tagetAddress=result[0].targetAddress;
+                var _productIdList=result[0].productIdList;
                 var percent=(_totalAmount/_cap) * 100;
 
+
+                var invoiceArray=new Array();
+                invoiceArray.push(result[1]);
+
+
+                window.console.log("invoice result = "+result[1].step);
+                window.console.log("invoice result = "+result[1][0].step);
+
+
+
+
+                window.console.log("getCampaign InvoiceList "+ result[1]);
 
                 var status=0;
                 var now=new Date().getTime()/1000;
@@ -472,6 +456,14 @@
                 };
                 detail[0]=detailData;
 
+                for(var l=0;l<result[1].length;l++){
+                    var invoiceEntity={
+                        "productId":result[1][l].productId,
+                        "step":result[1][l].step
+                    }
+
+                    invoiceList.push(invoiceEntity);
+                }
 
                 productContract.methods.getProductList(_productIdList).call(function(error, result){
 
@@ -480,6 +472,7 @@
                     window.console.log("getList "+ JSON.stringify(result));
 
                     for(var i =0; i<result.length;i++){
+
                         var target={
                             "id":result[i][0],
                             "supplier": result[i][1],

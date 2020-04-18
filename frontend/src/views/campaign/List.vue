@@ -99,14 +99,14 @@
                     var startTime=result[i][5];
                     var endTime=result[i][6];
                     var now=new Date().getTime()/1000;
+
                     if(now<startTime){
                         status="진행전";
+                    }else if(totalAmount >= cap){
+                        status="완료";
                     }else if(now > endTime && totalAmount < cap){
                         status="종료(실패)";
-                    }else if(now > endTime && totalAmount >= cap){
-                        status="종료";
                     }
-
 
                     var target={
                         "id": result[i][0],

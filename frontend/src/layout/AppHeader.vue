@@ -21,7 +21,7 @@
                     <router-link to="/campaign" class="nav-link nav-link-icon">캠페인</router-link>
                 </li>
                 <li class="nav-item">
-                    <router-link to="/market" class="nav-link nav-link-icon">마켓</router-link>
+                    <router-link to="/product" class="nav-link nav-link-icon">물품</router-link>
                 </li>
                 <li class="nav-item">
                     <router-link to="/target" class="nav-link nav-link-icon">후원대상</router-link>
