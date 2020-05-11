@@ -55,6 +55,7 @@ contract CampaignContract is Ownable {
     mapping(bytes32 => mapping(bytes32 => Invoice)) invoiceMap;
     mapping(bytes32 => mapping(address => Donate[])) donateListMap;//기부목록
 
+
     function addCampaign(
         address _targetAddress,
         string memory _name,
@@ -84,14 +85,54 @@ contract CampaignContract is Ownable {
 
         emit AddCampaign(id, _targetAddress, _name);
     }
-    function clearCampaign() public {
-        uint arrayLength = campaignIdList.length;
-        for (uint i = 0; i < arrayLength; i++) {
-            //1. 기간내 모집된게 없을 경우 자동 환불
-            delete campaignMap[campaignIdList[i]];
+    function deleteCampaign(uint _campaignIdListIdx) public onlyOwner() {
+
+        Campaign storage cam = campaignMap[campaignIdList[_campaignIdListIdx]];
+
+        address[] storage _donorAddrList = cam.donorAddressList;
+        uint donorArrayLength =_donorAddrList.length;//기부자 목록
+
+        for (uint l = 0; l < donorArrayLength; l++) {
+            address _donorAddr=_donorAddrList[l];
+            Donate[] storage donateList = donateListMap[cam.id][_donorAddr];
+
+            for (uint idx = 0; idx < donateList.length; idx++) {
+                uint256 amount = donateList[idx].amount;
+                address payable toDonor= address(uint160(_donorAddr));
+                toDonor.transfer(amount);
+                donateList[idx].refunded = true;
+
+                emit Refund(cam.id, toDonor, amount);
+            }
         }
-        delete campaignIdList;
+
+        delete campaignMap[cam.id];
+        delete campaignIdList[_campaignIdListIdx];
+
+        for(uint l = _campaignIdListIdx ; l < campaignIdList.length; l++){
+            uint nextIdx=l+1;
+            if(nextIdx<campaignIdList.length){
+                bytes32 val=campaignIdList[nextIdx];
+                if(val != bytes32(0)){
+                    campaignIdList[l]=val;
+                }
+            }
+        }
+        campaignIdList.pop();
     }
+    function getCampaignFailList() public view returns (uint8[] memory) {
+        uint arrayLength = campaignIdList.length;
+        uint8[] memory campaignFailIdxList=new uint8[](arrayLength);
+        for (uint i = 0; i < arrayLength; i++) {
+            campaignFailIdxList[i]=0;
+            Campaign memory cam = campaignMap[campaignIdList[i]];
+            if(now > cam.endTime && cam.cap > cam.totalAmount){
+                campaignFailIdxList[i]=1;
+            }
+        }
+        return campaignFailIdxList;
+    }
+
     function getCampaignList() public view returns (Campaign[] memory) {
         uint arrayLength = campaignIdList.length;
         Campaign[] memory campaignList = new Campaign[](arrayLength);
