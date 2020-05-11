@@ -84,7 +84,14 @@ contract CampaignContract is Ownable {
 
         emit AddCampaign(id, _targetAddress, _name);
     }
-
+    function clearCampaign() public {
+        uint arrayLength = campaignIdList.length;
+        for (uint i = 0; i < arrayLength; i++) {
+            //1. 기간내 모집된게 없을 경우 자동 환불
+            delete campaignMap[campaignIdList[i]];
+        }
+        delete campaignIdList;
+    }
     function getCampaignList() public view returns (Campaign[] memory) {
         uint arrayLength = campaignIdList.length;
         Campaign[] memory campaignList = new Campaign[](arrayLength);

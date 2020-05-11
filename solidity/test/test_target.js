@@ -33,6 +33,8 @@ contract("TargetContract",function(accounts){
             ,newTarget.country
             ,newTarget.contents
             ,{from:accounts[0]});
+
+
         var getTarget = await this.target.getTarget('0xEEd6DAA60E941b03B7a4239C7eEAA2CB5783BaC8',{from:accounts[0]});
         assert.equal(newTarget.addr, getTarget.addr, "target should match");
 
