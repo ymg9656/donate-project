@@ -44,11 +44,11 @@ import static javax.swing.UIManager.get;
 @Component
 public class ScheduledTasks {
 
-    private static String CAMPAIGN_CONTRACT="0xBE19E19e96A6A8ff3c51588f9799F56206178d73";
+    private static String CAMPAIGN_CONTRACT="0x844C27ac4cf41632d07D81B99aF562585655cedD";
     private static BigInteger GASPRICE=BigInteger.valueOf(Long.parseLong("20000000000"));
     private static BigInteger GASLIMIT=BigInteger.valueOf(Long.parseLong("531717"));
-    private static String PUBLIC_KEY="0x06c1604d4277c6E845f375EC1C6F6c1feAAf4890";
-    private static String PRIVATE_KEY="fafa80853dd96a9382368940a4b899aa63ef221e741597ff20d78c2b87649361";
+    private static String PUBLIC_KEY="0x449962EceECE14cDa0EA7FaC770AAE5991a8048B";
+    private static String PRIVATE_KEY="6a42628b93c43df10b7efd1c2389ebc234e7b7ba1699cc5a908cd1bebf04686c";
 
 
 
@@ -96,24 +96,21 @@ public class ScheduledTasks {
             List<Type> decode1 = FunctionReturnDecoder.decode(response.getValue(),function.getOutputParameters());
 
             try {
-                List<BigInteger> tArray = (List<BigInteger>) decode1.get(0).getValue();
-                for(BigInteger d:tArray){
-                    System.out.println("getValue1 tArray = " + d);
-                }
 
+                List<Uint8> tArray = (List<Uint8>) decode1.get(0).getValue();
+                for(int i = 0 ; i < tArray.size(); i++){
+                    Uint8 t=tArray.get(i);
+
+                    if(t.getValue().intValue()==1){
+                        //환불처리
+                        deleteCampaign(i);
+                    }
+                }
             }catch (Exception e){
                 e.printStackTrace();
             }
 
 
-
-            System.out.println("getValue1 = " + decode1.get(0).getValue());
-            System.out.println("getType1 = " + decode1.get(0).getTypeAsString());
-
-            List<Type> decode = FunctionReturnDecoder.decode(response.getResult(),function.getOutputParameters());
-
-            System.out.println("getValue = " + decode.get(0).getValue());
-            System.out.println("getType = " + decode.get(0).getTypeAsString());
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -129,13 +126,9 @@ public class ScheduledTasks {
             nonce = ethGetTransactionCount.getTransactionCount();
             nonce.add(BigInteger.valueOf(1));
 
-            Bytes32[] b = new Bytes32[1];
-            byte[] productId=Numeric.hexStringToByteArray("0x3b49b3ad39e7ea5eda088f33a2da743e52642e41c0948bf05787743534b32556");
-            b[0]=new Bytes32(productId);
-
             final Function function = new Function(
-                    "clearCampaign",
-                    Collections.<Type>emptyList(),
+                    "deleteCampaign",
+                    Arrays.<Type>asList(new Uint8(campaignIdx)),
                     Collections.<TypeReference<?>>emptyList());
 
             String encodedFunction = FunctionEncoder.encode(function);
@@ -151,7 +144,7 @@ public class ScheduledTasks {
 
             PersonalUnlockAccount personalUnlockAccount = null;
 
-            personalUnlockAccount=web3j.personalUnlockAccount("0x06c1604d4277c6E845f375EC1C6F6c1feAAf4890","").send();
+            personalUnlockAccount=web3j.personalUnlockAccount(PUBLIC_KEY,"").send();
 
             log.info("accountUnlocked : "+personalUnlockAccount.accountUnlocked());
 

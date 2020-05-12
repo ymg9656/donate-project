@@ -9,11 +9,15 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.web3j.abi.FunctionEncoder;
+import org.web3j.abi.FunctionReturnDecoder;
 import org.web3j.abi.TypeReference;
+import org.web3j.abi.datatypes.DynamicArray;
 import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.abi.datatypes.generated.Bytes32;
+import org.web3j.abi.datatypes.generated.Uint8;
 import org.web3j.crypto.Credentials;
 import org.web3j.crypto.RawTransaction;
 import org.web3j.crypto.TransactionEncoder;
@@ -29,17 +33,19 @@ import org.web3j.utils.Numeric;
 
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 @Controller
 public class MainController {
 
-    private static String CAMPAIGN_CONTRACT="0xC13a358fdbDBBf5DAB52195C83aE025a1Cd273DD";
+    private static String CAMPAIGN_CONTRACT="0xbDb89BB1bBc9b2D0cf207FDEcb104DBe6998F860";
     private static BigInteger GASPRICE=BigInteger.valueOf(Long.parseLong("20000000000"));
     private static BigInteger GASLIMIT=BigInteger.valueOf(Long.parseLong("531717"));
-    private static String PUBLIC_KEY="0x06c1604d4277c6E845f375EC1C6F6c1feAAf4890";
-    private static String PRIVATE_KEY="fafa80853dd96a9382368940a4b899aa63ef221e741597ff20d78c2b87649361";
+    private static String PUBLIC_KEY="0x449962EceECE14cDa0EA7FaC770AAE5991a8048B";
+    private static String PRIVATE_KEY="6a42628b93c43df10b7efd1c2389ebc234e7b7ba1699cc5a908cd1bebf04686c";
 
 
 
@@ -55,9 +61,8 @@ public class MainController {
         return "index";
     }
 
-
-    @RequestMapping(value = "/deleteCampaign",method = RequestMethod.GET)
-    public String deleteCampaign(@RequestParam(required = true)Integer campaignIdx){
+    @RequestMapping(value = "/test",method = RequestMethod.GET)
+    public @ResponseBody String test(@RequestParam(required = true)Integer campaignIdx){
         BigInteger nonce=null;
         Web3ClientVersion web3ClientVersion = null;
         try {
@@ -66,62 +71,56 @@ public class MainController {
             nonce = ethGetTransactionCount.getTransactionCount();
             nonce.add(BigInteger.valueOf(1));
 
-            Bytes32[] b = new Bytes32[1];
-            byte[] productId= Numeric.hexStringToByteArray("0x3b49b3ad39e7ea5eda088f33a2da743e52642e41c0948bf05787743534b32556");
-            b[0]=new Bytes32(productId);
+
 
             final Function function = new Function(
-                    "clearCampaign",
+                    "getCampaignFailList",
                     Collections.<Type>emptyList(),
-                    Collections.<TypeReference<?>>emptyList());
+                    Arrays.asList(new TypeReference<DynamicArray<Uint8>>() {}));
+            //Arrays.asList(new TypeReference<Type>() {}
 
             String encodedFunction = FunctionEncoder.encode(function);
 
             // Create new Transaction
-            RawTransaction rawTransaction = RawTransaction.createTransaction(nonce, GASPRICE, GASLIMIT, CAMPAIGN_CONTRACT, BigInteger.ZERO, encodedFunction);
-            Credentials credentials=Credentials.create(PRIVATE_KEY);
-
-            log.info("getAddress: "+credentials.getAddress());
-            // Sign the Transaction
-            byte[] signedMessage = TransactionEncoder.signMessage(rawTransaction, credentials);
-            String hexValue = Numeric.toHexString(signedMessage);
-
-            PersonalUnlockAccount personalUnlockAccount = null;
-
-            personalUnlockAccount=web3j.personalUnlockAccount("0x06c1604d4277c6E845f375EC1C6F6c1feAAf4890","").send();
-
-            log.info("accountUnlocked : "+personalUnlockAccount.accountUnlocked());
-
-            EthSendTransaction t = web3j.ethSendTransaction(Transaction.createFunctionCallTransaction(
-                    PUBLIC_KEY,
-                    nonce, //or nullL
-                    GASPRICE, //gasPrice
-                    GASLIMIT, //gasLimit
-                    CAMPAIGN_CONTRACT,
-                    encodedFunction)).send();
-
-            // Send the Transaction
-            // EthSendTransaction t=  web3j.ethSendRawTransaction(hexValue).send();
-
-            EthGetTransactionReceipt r = web3j.ethGetTransactionReceipt(t.getTransactionHash()).send();
-            if(t!=null){
+            Transaction transaction=Transaction.createEthCallTransaction(PUBLIC_KEY,CAMPAIGN_CONTRACT,encodedFunction);
+            org.web3j.protocol.core.methods.response.EthCall response=web3j.ethCall(transaction,DefaultBlockParameterName.LATEST).send();
+            log.info("getCampaignList1 : "+response);
+            if(response!=null){
                 ObjectMapper mapper = new ObjectMapper();
-                String ethSendTransactionLog=mapper.writeValueAsString(t);
-                log.debug("ethSendTransactionLog : "+ethSendTransactionLog);
+                String ethSendTransactionLog=mapper.writeValueAsString(response);
+                log.info("getCampaignList2 : "+ethSendTransactionLog);
             }
+
+
+            List<Type> decode1 = FunctionReturnDecoder.decode(response.getValue(),function.getOutputParameters());
+
+            try {
+
+                List<Uint8> tArray = (List<Uint8>) decode1.get(0).getValue();
+                for(Uint8 d:tArray){
+                    System.out.println("getValue1 tArray = " + d.getValue());
+
+
+                }
+
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
+
+
+            System.out.println("getValue1 = " + decode1.get(0).getValue());
+            System.out.println("getType1 = " + decode1.get(0).getTypeAsString());
+
+            List<Type> decode = FunctionReturnDecoder.decode(response.getResult(),function.getOutputParameters());
+
+            System.out.println("getValue = " + decode.get(0).getValue());
+            System.out.println("getType = " + decode.get(0).getTypeAsString());
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-        // String ver = web3ClientVersion ==null ? "null" : web3ClientVersion.getWeb3ClientVersion();
-
-        log.info("The time is now {}", dateFormat.format(new Date())+" / "+nonce);
-
-
-
-
-
-        return "index";
+        return "rr";
     }
 
 
